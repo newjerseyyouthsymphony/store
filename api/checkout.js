@@ -34,7 +34,7 @@ module.exports = async function handler(req, res) {
       if (
         stripePrice.billing_scheme !== 'per_unit'
         || !Number.isInteger(stripePrice.unit_amount)
-        || stripePrice.tax_behavior === 'unspecified'
+        || stripePrice.tax_behavior !== 'exclusive'
       ) {
         return { price: priceId, quantity };
       }
@@ -50,12 +50,9 @@ module.exports = async function handler(req, res) {
       const priceData = {
         currency: stripePrice.currency,
         unit_amount: stripePrice.unit_amount,
+        tax_behavior: stripePrice.tax_behavior,
         product_data: { name: displayName },
       };
-
-      if (stripePrice.tax_behavior) {
-        priceData.tax_behavior = stripePrice.tax_behavior;
-      }
 
       return {
         price_data: priceData,
