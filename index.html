@@ -1,4 +1,3 @@
-<!-- Updated index.html to call /api/create-checkout-session on checkout -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,6 +44,11 @@
         const STRIPE_PUBLISHABLE_KEY = 'pk_test_REPLACE_ME';
         // stripe will be initialized after stripe.js loads below
         let stripe = null;
+
+        // Utility: simple email regex for light validation (not perfect but helpful)
+        function isProbablyEmail(email) {
+            return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+        }
     </script>
 
     <h1>NJYS Web Store</h1>
@@ -87,16 +91,16 @@
                         </select>
                         <label>Size:</label>
                         <select id="size-item1">
-                            <!-- IMPORTANT: replace price_PASTE_ID_HERE with your Stripe Price IDs (price_...) -->
-                            <option value="price_1U9W26Li0nDifNVEfEp06YLd,Small,16.00">Small - $16.00</option>
-                            <option value="price_PASTE_ID_HERE,Medium,16.00">Medium - $16.00</option>
-                            <option value="price_PASTE_ID_HERE,Large,16.00">Large - $16.00</option>
-                            <option value="price_PASTE_ID_HERE,X-Large,16.00">X-Large - $16.00</option>
-                            <option value="price_PASTE_ID_HERE,2X-Large,17.00">2X-Large - $17.00</option>
-                            <option value="price_PASTE_ID_HERE,3X-Large,18.00">3X-Large - $18.00</option>
-                            <option value="price_PASTE_ID_HERE,Youth Medium,14.00">Youth Medium - $14.00</option>
-                            <option value="price_PASTE_ID_HERE,Youth Large,14.00">Youth Large - $14.00</option>
-                            <option value="price_PASTE_ID_HERE,Youth X-Large,14.00">Youth X-Large - $14.00</option>
+                            <!-- Use data- attributes for safer parsing. Replace data-price-id placeholders with real price_xxx values when ready. -->
+                            <option value="price_1U9W26Li0nDifNVEfEp06YLd" data-size="Small" data-unit-price="16.00">Small - $16.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="Medium" data-unit-price="16.00">Medium - $16.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="Large" data-unit-price="16.00">Large - $16.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="X-Large" data-unit-price="16.00">X-Large - $16.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="2X-Large" data-unit-price="17.00">2X-Large - $17.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="3X-Large" data-unit-price="18.00">3X-Large - $18.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="Youth Medium" data-unit-price="14.00">Youth Medium - $14.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="Youth Large" data-unit-price="14.00">Youth Large - $14.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="Youth X-Large" data-unit-price="14.00">Youth X-Large - $14.00</option>
                         </select>
                         <label>Qty:</label>
                         <input type="number" id="qty-item1" value="1" min="1">
@@ -116,10 +120,10 @@
                         </select>
                         <label>Size:</label>
                         <select id="size-item2">
-                            <option value="price_PASTE_ID_HERE,Small,35.00">Small - $35.00</option>
-                            <option value="price_PASTE_ID_HERE,Medium,35.00">Medium - $35.00</option>
-                            <option value="price_PASTE_ID_HERE,Large,35.00">Large - $35.00</option>
-                            <option value="price_PASTE_ID_HERE,X-Large,35.00">X-Large - $35.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="Small" data-unit-price="35.00">Small - $35.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="Medium" data-unit-price="35.00">Medium - $35.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="Large" data-unit-price="35.00">Large - $35.00</option>
+                            <option value="price_PASTE_ID_HERE" data-size="X-Large" data-unit-price="35.00">X-Large - $35.00</option>
                         </select>
                         <label>Qty:</label>
                         <input type="number" id="qty-item2" value="1" min="1">
@@ -146,13 +150,24 @@
         const colorSelect = document.getElementById(`color-${elementId}`);
         const qtyInput = document.getElementById(`qty-${elementId}`);
 
-        const colorValue = colorSelect ? colorSelect.value : 'Standard';
-        const [stripePriceId, sizeName, priceVal] = (variationSelect.value || '').split(',');
-        const price = parseFloat(priceVal || '0');
-        const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+        const selectedOption = variationSelect && variationSelect.selectedOptions && variationSelect.selectedOptions[0];
+        if (!selectedOption) return;
 
+        const colorValue = colorSelect ? colorSelect.value : 'Standard';
+        const stripePriceId = selectedOption.value;
+        const sizeName = selectedOption.dataset.size || '';
+        const price = parseFloat(selectedOption.dataset.unitPrice || '0');
+        const qty = qtyInput ? Math.max(1, parseInt(qtyInput.value) || 1) : 1;
+
+        // Basic validation
         if (!stripePriceId || stripePriceId === 'price_PASTE_ID_HERE') {
-            alert('Error: missing price ID for this item. Please contact the store admin.');
+            alert('Error: missing price ID for this option. Please contact the store admin.');
+            return;
+        }
+
+        // Prevent negative/zero quantities
+        if (qty <= 0) {
+            alert('Quantity must be at least 1');
             return;
         }
 
@@ -168,21 +183,45 @@
     function renderCart() {
         const container = document.getElementById('cartItems');
         if (!cart || cart.length === 0) {
-            container.innerHTML = 'Your cart is empty.';
+            container.textContent = 'Your cart is empty.';
             document.getElementById('cartTotal').textContent = '0.00';
             validateForm();
             return;
         }
+        // Clear safely
         container.innerHTML = '';
         let total = 0;
         cart.forEach((item, idx) => {
             const itemTotal = item.price * item.qty;
             total += itemTotal;
-            const itemHtml = document.createElement('div');
-            itemHtml.className = 'cart-item';
-            itemHtml.innerHTML = `<div><strong>${item.name}</strong><br/><small>${item.size} - ${item.color} x${item.qty}</small></div>
-                                  <div>$${itemTotal.toFixed(2)}<br/><button class="remove-btn" onclick="removeItem(${idx})">Remove</button></div>`;
-            container.appendChild(itemHtml);
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'cart-item';
+
+            const left = document.createElement('div');
+            const strong = document.createElement('strong');
+            strong.textContent = item.name;
+            const br = document.createElement('br');
+            const small = document.createElement('small');
+            small.textContent = `${item.size} - ${item.color} x${item.qty}`;
+            left.appendChild(strong);
+            left.appendChild(br);
+            left.appendChild(small);
+
+            const right = document.createElement('div');
+            right.textContent = `$${itemTotal.toFixed(2)}`;
+            const rightBr = document.createElement('br');
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-btn';
+            removeBtn.type = 'button';
+            removeBtn.textContent = 'Remove';
+            removeBtn.addEventListener('click', () => { removeItem(idx); });
+            right.appendChild(rightBr);
+            right.appendChild(removeBtn);
+
+            itemDiv.appendChild(left);
+            itemDiv.appendChild(right);
+            container.appendChild(itemDiv);
         });
         document.getElementById('cartTotal').textContent = total.toFixed(2);
         validateForm();
@@ -202,7 +241,7 @@
         const checkoutBtn = document.getElementById('checkoutBtn');
         const hintElement = document.getElementById('validationHint');
         
-        if (studentName && ensembleName && emailAddress && cartHasItems) {
+        if (studentName && ensembleName && isProbablyEmail(emailAddress) && cartHasItems) {
             checkoutBtn.disabled = false;
             hintElement.textContent = '';
         } else {
@@ -210,7 +249,7 @@
             const missing = [];
             if (!studentName) missing.push('student name');
             if (!ensembleName) missing.push('ensemble name');
-            if (!emailAddress) missing.push('email');
+            if (!emailAddress || !isProbablyEmail(emailAddress)) missing.push('valid email');
             if (!cartHasItems) missing.push('items in cart');
             hintElement.textContent = `Missing: ${missing.join(', ')}`;
         }
@@ -218,15 +257,20 @@
 
     async function handleCheckout() {
         if (!stripe) {
-            alert('Stripe has not been initialized. Please reload the page.');
+            alert('Payment system not initialized. Please reload the page.');
             return;
         }
         
         const studentName = document.getElementById('studentInput').value.trim();
         const ensembleName = document.getElementById('ensembleInput').value.trim();
         const emailAddress = document.getElementById('emailInput').value.trim();
-        const cartDescription = cart.map(c => `${c.name} (${c.size}-${c.color}) x${c.qty}`).join(' | ');
 
+        if (!isProbablyEmail(emailAddress)) {
+            alert('Please provide a valid parent email address.');
+            return;
+        }
+
+        // Build payload with only necessary fields (price ids and qtys)
         const payload = {
             cart: cart.map(item => ({ id: item.id, qty: item.qty })),
             studentName,
@@ -244,9 +288,7 @@
             if (!resp.ok) throw new Error(data.error || 'Failed to create checkout session');
 
             // Redirect to Checkout using the session id returned from the server
-            stripe.redirectToCheckout({ sessionId: data.id }).then(result => {
-                if (result.error) alert(result.error.message);
-            });
+            await stripe.redirectToCheckout({ sessionId: data.id });
         } catch (err) {
             console.error('Checkout error', err);
             alert('Error creating checkout session: ' + (err.message || err));
