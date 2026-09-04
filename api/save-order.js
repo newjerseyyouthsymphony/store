@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { orderId, customerInfo, amountPaid, buyerEmail, stripeReference } = req.body;
+    const { orderId, customerInfo, amountPaid, buyerEmail, stripeReference, orderContents } = req.body;
 
     if (!process.env.AIRTABLE_API_TOKEN || !process.env.AIRTABLE_BASE_ID) {
       console.error('Missing Airtable credentials');
@@ -15,10 +15,6 @@ module.exports = async function handler(req, res) {
 
     const baseId = process.env.AIRTABLE_BASE_ID;
     const token = process.env.AIRTABLE_API_TOKEN;
-
-    console.log('Starting Airtable request...');
-    console.log('Base ID:', baseId);
-    console.log('Token starts with:', token.substring(0, 4));
 
     const data = JSON.stringify({
       records: [
@@ -29,6 +25,7 @@ module.exports = async function handler(req, res) {
             'Amount Paid': amountPaid,
             'Buyer Email': buyerEmail,
             'Stripe Reference Block': stripeReference,
+            'Order Contents': orderContents || '',
           },
         },
       ],
@@ -46,12 +43,6 @@ module.exports = async function handler(req, res) {
       },
     };
 
-    console.log('Request options:', {
-      method: options.method,
-      hostname: options.hostname,
-      path: options.path,
-    });
-
     return new Promise((resolve) => {
       const request = https.request(options, (response) => {
         let body = '';
@@ -61,9 +52,6 @@ module.exports = async function handler(req, res) {
         });
 
         response.on('end', () => {
-          console.log('Response status:', response.statusCode);
-          console.log('Response body:', body);
-
           if (response.statusCode === 200) {
             const result = JSON.parse(body);
             resolve(res.status(200).json({ success: true, airtableId: result.records[0].id }));
