@@ -186,7 +186,7 @@
                     <button class="btn-add" onclick="addItem('Sweatpants','item4')">Add to Cart</button>
                 </div>
 
-                <!-- Item 5: Tote Bag -->
+                <!-- Item 5: Tote Bag (One Size) -->
                 <div class="product-card">
                     <div>
                         <div class="product-title">Tote Bag</div>
@@ -197,26 +197,16 @@
                             <option value="Navy">Navy</option>
                             <option value="Natural">Natural</option>
                         </select>
-                        <label>Size:</label>
-                        <select id="size-item5">
-                            <!-- IMPORTANT: replace price_PASTE_ID_HERE with your Stripe Price IDs (price_...) -->
-                            <option value="price_PASTE_ID_HERE,Small,32.00">Small - $32.00</option>
-                            <option value="price_PASTE_ID_HERE,Medium,32.00">Medium - $32.00</option>
-                            <option value="price_PASTE_ID_HERE,Large,32.00">Large - $32.00</option>
-                            <option value="price_PASTE_ID_HERE,X-Large,32.00">X-Large - $32.00</option>
-                            <option value="price_PASTE_ID_HERE,2X-Large,33.00">2X-Large - $33.00</option>
-                            <option value="price_PASTE_ID_HERE,3X-Large,34.00">3X-Large - $34.00</option>
-                            <option value="price_PASTE_ID_HERE,Youth Medium,30.00">Youth Medium - $30.00</option>
-                            <option value="price_PASTE_ID_HERE,Youth Large,30.00">Youth Large - $30.00</option>
-                            <option value="price_PASTE_ID_HERE,Youth X-Large,30.00">Youth X-Large - $30.00</option>
-                        </select>
+                        <label>Price:</label>
+                        <div style="padding: 8px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9;">One Size - $18.00</div>
+                        <input type="hidden" id="size-item5" value="price_PASTE_ID_HERE,One Size,18.00">
                         <label>Qty:</label>
                         <input type="number" id="qty-item5" value="1" min="1">
                     </div>
                     <button class="btn-add" onclick="addItem('Tote Bag','item5')">Add to Cart</button>
                 </div>
 
-                <!-- Item 6: Jumbo Tote Bag -->
+                <!-- Item 6: Jumbo Tote Bag (One Size) -->
                 <div class="product-card">
                     <div>
                         <div class="product-title">Jumbo Tote Bag</div>
@@ -225,19 +215,9 @@
                             <option value="Black">Black</option>
                             <option value="Natural">Natural</option>
                         </select>
-                        <label>Size:</label>
-                        <select id="size-item6">
-                            <!-- IMPORTANT: replace price_PASTE_ID_HERE with your Stripe Price IDs (price_...) -->
-                            <option value="price_PASTE_ID_HERE,Small,32.00">Small - $32.00</option>
-                            <option value="price_PASTE_ID_HERE,Medium,32.00">Medium - $32.00</option>
-                            <option value="price_PASTE_ID_HERE,Large,32.00">Large - $32.00</option>
-                            <option value="price_PASTE_ID_HERE,X-Large,32.00">X-Large - $32.00</option>
-                            <option value="price_PASTE_ID_HERE,2X-Large,33.00">2X-Large - $33.00</option>
-                            <option value="price_PASTE_ID_HERE,3X-Large,34.00">3X-Large - $34.00</option>
-                            <option value="price_PASTE_ID_HERE,Youth Medium,30.00">Youth Medium - $30.00</option>
-                            <option value="price_PASTE_ID_HERE,Youth Large,30.00">Youth Large - $30.00</option>
-                            <option value="price_PASTE_ID_HERE,Youth X-Large,30.00">Youth X-Large - $30.00</option>
-                        </select>
+                        <label>Price:</label>
+                        <div style="padding: 8px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc; background: #f9f9f9;">One Size - $22.00</div>
+                        <input type="hidden" id="size-item6" value="price_PASTE_ID_HERE,One Size,22.00">
                         <label>Qty:</label>
                         <input type="number" id="qty-item6" value="1" min="1">
                     </div>
