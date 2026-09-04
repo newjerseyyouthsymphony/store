@@ -321,7 +321,13 @@
             const emailAddress = document.getElementById('emailInput').value.trim();
             const cartDescription = cart.map(c => `${c.name} (${c.size}-${c.color}) x${c.qty}`).join(' | ');
             const totalAmount = parseFloat(document.getElementById('cartTotal').textContent);
-            const lineItems = cart.map(item => ({ price: item.id, quantity: item.qty }));
+            const lineItems = cart.map(item => ({
+                id: item.id,
+                name: item.name,
+                color: item.color,
+                size: item.size,
+                quantity: item.qty
+            }));
             const metadataString = `${studentName} | ${ensembleName} | ${emailAddress} | ${cartDescription}`;
             const response = await fetch('/api/checkout', {
                 method: 'POST',
