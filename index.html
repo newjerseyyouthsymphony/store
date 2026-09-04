@@ -17,7 +17,7 @@
         @media(min-width: 640px) { .products-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media(min-width: 1100px) { .products-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         .product-card { border: none; padding: 16px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
-        .product-image { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; background: #f4f7fb; object-fit: contain; object-position: center; border: 1px solid #e5ecf5; }
+        .product-image { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; background: #f4f7fb; object-fit: contain; object-position: center; border: 1px solid #e5ecf5; cursor: zoom-in; }
         .product-title { font-size: 18px; font-weight: bold; margin: 0 0 8px 0; min-height: 38px; color: #1f63af; }
         label { display: block; font-size: 12px; font-weight: bold; margin-top: 8px; margin-bottom: 5px; color: #333; }
         select, input { padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; width: 100%; background-color: #f9f9f9; color: #333; }
@@ -40,6 +40,10 @@
         .student-panel h2 { color: #1f63af; }
         .customer-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         @media(min-width: 900px) { .customer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+        .lightbox.open { display: flex; }
+        .lightbox img { max-width: min(96vw, 1000px); max-height: 92vh; width: auto; height: auto; object-fit: contain; background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .lightbox-close { position: fixed; top: 18px; right: 22px; background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 34px; line-height: 1; width: 44px; height: 44px; border-radius: 999px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -64,7 +68,32 @@
             const imageUrl = productImages[elementId]?.[colorSelect.value];
             if (imageUrl) imageElement.src = imageUrl;
         }
+
+        function openLightbox(src, alt) {
+            const lb = document.getElementById('lightbox');
+            const lbImg = document.getElementById('lightboxImg');
+            lbImg.src = src;
+            lbImg.alt = alt || 'Enlarged product image';
+            lb.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lb = document.getElementById('lightbox');
+            lb.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function syncLightboxFromThumbnail(imgEl) {
+            if (!imgEl) return;
+            openLightbox(imgEl.src, imgEl.alt);
+        }
     </script>
+
+    <div id="lightbox" class="lightbox" onclick="if (event.target === this) closeLightbox()" aria-hidden="true">
+        <button class="lightbox-close" type="button" aria-label="Close enlarged image" onclick="closeLightbox()">&times;</button>
+        <img id="lightboxImg" src="" alt="Enlarged product image">
+    </div>
 
     <h1>NJYS Merch Store</h1>
 
@@ -92,7 +121,7 @@
             <div class="products-list">
                 <div class="product-card">
                     <div>
-                        <img class="product-image" id="image-item1" src="https://i.imgur.com/y3vDkf6.png" alt="T-Shirt product image">
+                        <img class="product-image" id="image-item1" src="https://i.imgur.com/y3vDkf6.png" alt="T-Shirt product image" onclick="syncLightboxFromThumbnail(this)">
                         <div class="product-title">T-Shirt (TEST)</div>
                         <label>Color:</label>
                         <select id="color-item1" onchange="updateProductImage('item1')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
@@ -115,7 +144,7 @@
                 </div>
                 <div class="product-card">
                     <div>
-                        <img class="product-image" id="image-item2" src="https://i.imgur.com/AViHWYP.png" alt="Zippered Hoodie product image">
+                        <img class="product-image" id="image-item2" src="https://i.imgur.com/AViHWYP.png" alt="Zippered Hoodie product image" onclick="syncLightboxFromThumbnail(this)">
                         <div class="product-title">Zippered Hoodie</div>
                         <label>Color:</label>
                         <select id="color-item2" onchange="updateProductImage('item2')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
@@ -138,7 +167,7 @@
                 </div>
                 <div class="product-card">
                     <div>
-                        <img class="product-image" id="image-item3" src="https://i.imgur.com/yktaUpI.png" alt="Hoodie product image">
+                        <img class="product-image" id="image-item3" src="https://i.imgur.com/yktaUpI.png" alt="Hoodie product image" onclick="syncLightboxFromThumbnail(this)">
                         <div class="product-title">Hoodie (TEST)</div>
                         <label>Color:</label>
                         <select id="color-item3" onchange="updateProductImage('item3')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
@@ -161,7 +190,7 @@
                 </div>
                 <div class="product-card">
                     <div>
-                        <img class="product-image" id="image-item4" src="https://i.imgur.com/3wCAthF.png" alt="Sweatpants product image">
+                        <img class="product-image" id="image-item4" src="https://i.imgur.com/3wCAthF.png" alt="Sweatpants product image" onclick="syncLightboxFromThumbnail(this)">
                         <div class="product-title">Sweatpants</div>
                         <label>Color:</label>
                         <select id="color-item4" onchange="updateProductImage('item4')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
@@ -184,7 +213,7 @@
                 </div>
                 <div class="product-card">
                     <div>
-                        <img class="product-image" id="image-item5" src="https://i.imgur.com/FMXKCCM.png" alt="Tote Bag product image">
+                        <img class="product-image" id="image-item5" src="https://i.imgur.com/FMXKCCM.png" alt="Tote Bag product image" onclick="syncLightboxFromThumbnail(this)">
                         <div class="product-title">Tote Bag</div>
                         <label>Color:</label>
                         <select id="color-item5" onchange="updateProductImage('item5')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option><option value="Natural">Natural</option></select>
@@ -198,7 +227,7 @@
                 </div>
                 <div class="product-card">
                     <div>
-                        <img class="product-image" id="image-item6" src="https://i.imgur.com/PQ0YPm7.png" alt="Jumbo Tote Bag product image">
+                        <img class="product-image" id="image-item6" src="https://i.imgur.com/PQ0YPm7.png" alt="Jumbo Tote Bag product image" onclick="syncLightboxFromThumbnail(this)">
                         <div class="product-title">Jumbo Tote Bag</div>
                         <label>Color:</label>
                         <select id="color-item6" onchange="updateProductImage('item6')"><option value="Black">Black</option><option value="Natural">Natural</option></select>
@@ -335,6 +364,7 @@
         }
     }
 
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLightbox(); });
     document.addEventListener('DOMContentLoaded', function () {
         if (typeof Stripe === 'function') {
             stripe = Stripe('pk_live_51GbHGJLi0nDifNVEPo7WLcwjHCriorbmgpx2NN6tVuHcnOqNU1Psn4YJY4G1Mrex2UbNOEyP3m825Pzc9FMt25w300mNGxYaju');
