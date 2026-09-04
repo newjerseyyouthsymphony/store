@@ -9,34 +9,140 @@
     <script src="https://js.stripe.com/v3/"></script>
 
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; color: #333; max-width: 1400px; margin: 0 auto; background-color: #1f63af; min-height: 100vh; }
-        h1, h2 { border-bottom: 2px solid #6db3f2; padding-bottom: 8px; color: #fff; }
+        :root {
+            --njys-blue: #1f63af;
+            --njys-blue-2: #4a9ee6;
+            --njys-blue-3: #6db3f2;
+            --njys-navy: #123e73;
+            --panel: rgba(255, 255, 255, 0.96);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+            color: #333;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top, rgba(255,255,255,0.18), transparent 30%),
+                linear-gradient(180deg, var(--njys-blue) 0%, var(--njys-navy) 100%);
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+            background-size: 36px 36px;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0));
+            opacity: 0.18;
+        }
+        h1, h2 {
+            border-bottom: 2px solid rgba(255,255,255,0.55);
+            padding-bottom: 8px;
+            color: #fff;
+            letter-spacing: 0.2px;
+        }
+        h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 18px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.18);
+        }
+        .hero {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.06));
+            border: 1px solid rgba(255,255,255,0.18);
+            color: #fff;
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.16);
+            backdrop-filter: blur(8px);
+        }
+        .hero p { margin: 0; line-height: 1.5; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media(min-width: 1024px) { .grid { grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr); align-items: start; } }
         .products-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
         @media(min-width: 640px) { .products-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media(min-width: 1100px) { .products-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-        .product-card { border: none; padding: 16px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
-        .product-image { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; background: #f4f7fb; object-fit: contain; object-position: center; border: 1px solid #e5ecf5; cursor: zoom-in; }
+        .product-card {
+            border: 1px solid rgba(31,99,175,0.12);
+            padding: 16px;
+            border-radius: 16px;
+            background: var(--panel);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.14);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            overflow: hidden;
+        }
+        .product-card:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(0,0,0,0.18); }
+        .product-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #f4f7fb, #eef4fb);
+            object-fit: contain;
+            object-position: center;
+            border: 1px solid #e5ecf5;
+            cursor: zoom-in;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5);
+        }
         .product-title { font-size: 18px; font-weight: bold; margin: 0 0 8px 0; min-height: 38px; color: #1f63af; }
         label { display: block; font-size: 12px; font-weight: bold; margin-top: 8px; margin-bottom: 5px; color: #333; }
-        select, input { padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; width: 100%; background-color: #f9f9f9; color: #333; }
-        select:focus, input:focus { outline: none; border-color: #1f63af; background-color: #fff; }
+        select, input {
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #d9e3ef;
+            box-sizing: border-box;
+            width: 100%;
+            background-color: #f9fbfe;
+            color: #333;
+        }
+        select:focus, input:focus { outline: none; border-color: var(--njys-blue); background-color: #fff; box-shadow: 0 0 0 3px rgba(109,179,242,0.18); }
         input[type="number"] { max-width: 70px; }
         input[type="text"], input[type="email"] { padding: 10px; margin-bottom: 10px; }
-        .cart-panel, .student-panel { border: none; padding: 20px; border-radius: 12px; background: #fff; height: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .cart-panel, .student-panel {
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.97);
+            height: fit-content;
+            box-shadow: 0 14px 34px rgba(0,0,0,0.18);
+            backdrop-filter: blur(6px);
+        }
         @media(min-width: 1024px) { .cart-panel { position: sticky; top: 20px; } }
-        .cart-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; font-size: 14px; color: #333; }
+        .cart-item { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid #eee; padding: 12px 0; font-size: 14px; color: #333; }
         .cart-item:last-child { border-bottom: none; }
         .remove-btn { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 12px; width: auto; display: inline; font-weight: bold; }
         .remove-btn:hover { color: #ff4d4d; }
         .total-box { font-size: 20px; font-weight: bold; margin-top: 15px; text-align: right; color: #1f63af; padding-top: 12px; border-top: 2px solid #eee; }
-        .btn-add { background-color: #6db3f2; color: #fff; border: none; cursor: pointer; font-weight: bold; margin-top: 8px; padding: 12px 16px; border-radius: 8px; font-size: 15px; transition: all 0.2s ease; }
-        .btn-add:hover { background-color: #4a9ee6; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(109, 179, 242, 0.3); }
-        .btn-checkout { background-color: #6db3f2; color: #fff; border: none; width: 100%; padding: 14px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; border-radius: 8px; transition: all 0.2s ease; }
-        .btn-checkout:hover:not(:disabled) { background-color: #4a9ee6; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(109, 179, 242, 0.3); }
-        .btn-checkout:disabled { background-color: #ccc; color: #999; cursor: not-allowed; }
-        .validation-hint { font-size: 12px; color: #e8f0f7; margin-top: 8px; font-style: italic; }
+        .btn-add, .btn-checkout {
+            background: linear-gradient(135deg, var(--njys-blue-3), var(--njys-blue-2));
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 8px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        }
+        .btn-add:hover, .btn-checkout:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(74, 158, 230, 0.32);
+            filter: brightness(1.02);
+        }
+        .btn-checkout { width: 100%; padding: 14px; font-size: 16px; margin-top: 15px; text-align: center; border-radius: 10px; }
+        .btn-checkout:disabled { background: #cfd6df; color: #8a97a6; cursor: not-allowed; box-shadow: none; transform: none; }
+        .validation-hint { font-size: 12px; color: #7c8ea3; margin-top: 8px; font-style: italic; }
         .student-panel h2 { color: #1f63af; }
         .customer-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         @media(min-width: 900px) { .customer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -48,7 +154,6 @@
 </head>
 <body>
     <script>
-        // Global variables initialized at the top
         let cart = [];
         let stripe = null;
 
@@ -96,6 +201,7 @@
     </div>
 
     <h1>NJYS Merch Store</h1>
+    <div class="hero"><p>Browse NJYS merchandise, choose your size and color, then check out securely in just a few clicks.</p></div>
 
     <div class="student-panel" style="margin-bottom: 20px;">
         <h2>Customer Info</h2>
@@ -119,126 +225,12 @@
         <div>
             <h2>Available Items</h2>
             <div class="products-list">
-                <div class="product-card">
-                    <div>
-                        <img class="product-image" id="image-item1" src="https://i.imgur.com/y3vDkf6.png" alt="T-Shirt product image" onclick="syncLightboxFromThumbnail(this)">
-                        <div class="product-title">T-Shirt (TEST)</div>
-                        <label>Color:</label>
-                        <select id="color-item1" onchange="updateProductImage('item1')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
-                        <label>Size:</label>
-                        <select id="size-item1">
-                            <option value="price_1UByQ1Li0nDifNVEyfIPA28z,Small,16.00">Small - $16.00 (TEST)</option>
-                            <option value="price_1UByQ1Li0nDifNVEgo9Bd48P,Medium,16.00">Medium - $16.00 (TEST)</option>
-                            <option value="price_1UBwEOLi0nDifNVEzGYcYKZi,Large,16.00">Large - $16.00</option>
-                            <option value="price_1UBwEOLi0nDifNVEp6478nvh,X-Large,16.00">X-Large - $16.00</option>
-                            <option value="price_1UBpDBLi0nDifNVEIrGOaYzS,2X-Large,17.00">2X-Large - $17.00</option>
-                            <option value="price_1UBpDBLi0nDifNVErFzMrto3,3X-Large,18.00">3X-Large - $18.00</option>
-                            <option value="price_1UBpDBLi0nDifNVEdfYNtIxl,Youth Medium,14.00">Youth Medium - $14.00</option>
-                            <option value="price_1UBwEOLi0nDifNVEhW9FQLN9,Youth Large,14.00">Youth Large - $14.00</option>
-                            <option value="price_1UBwEOLi0nDifNVE1hFX9cwm,Youth X-Large,14.00">Youth X-Large - $14.00</option>
-                        </select>
-                        <label>Qty:</label>
-                        <input type="number" id="qty-item1" value="1" min="1">
-                    </div>
-                    <button class="btn-add" onclick="addItem('T-Shirt','item1')">Add to Cart</button>
-                </div>
-                <div class="product-card">
-                    <div>
-                        <img class="product-image" id="image-item2" src="https://i.imgur.com/AViHWYP.png" alt="Zippered Hoodie product image" onclick="syncLightboxFromThumbnail(this)">
-                        <div class="product-title">Zippered Hoodie</div>
-                        <label>Color:</label>
-                        <select id="color-item2" onchange="updateProductImage('item2')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
-                        <label>Size:</label>
-                        <select id="size-item2">
-                            <option value="price_1UBpG1Li0nDifNVEA7bz4kRw,Small,35.00">Small - $35.00</option>
-                            <option value="price_1UBwFoLi0nDifNVEBfrzbmXa,Medium,35.00">Medium - $35.00</option>
-                            <option value="price_1UBwFoLi0nDifNVE92EGFOq2,Large,35.00">Large - $35.00</option>
-                            <option value="price_1UBwGeLi0nDifNVE1kgLUTAC,X-Large,35.00">X-Large - $35.00</option>
-                            <option value="price_1UBpGTLi0nDifNVEoKObtdqr,2X-Large,36.00">2X-Large - $36.00</option>
-                            <option value="price_1UBpGTLi0nDifNVEI7nE4vpR,3X-Large,37.00">3X-Large - $37.00</option>
-                            <option value="price_1UBpG1Li0nDifNVERmjjAQfx,Youth Medium,33.00">Youth Medium - $33.00</option>
-                            <option value="price_1UBwGeLi0nDifNVEV4ZVLsuz,Youth Large,33.00">Youth Large - $33.00</option>
-                            <option value="price_1UBwGeLi0nDifNVE9pwM9xSK,Youth X-Large,33.00">Youth X-Large - $33.00</option>
-                        </select>
-                        <label>Qty:</label>
-                        <input type="number" id="qty-item2" value="1" min="1">
-                    </div>
-                    <button class="btn-add" onclick="addItem('Zippered Hoodie','item2')">Add to Cart</button>
-                </div>
-                <div class="product-card">
-                    <div>
-                        <img class="product-image" id="image-item3" src="https://i.imgur.com/yktaUpI.png" alt="Hoodie product image" onclick="syncLightboxFromThumbnail(this)">
-                        <div class="product-title">Hoodie (TEST)</div>
-                        <label>Color:</label>
-                        <select id="color-item3" onchange="updateProductImage('item3')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
-                        <label>Size:</label>
-                        <select id="size-item3">
-                            <option value="price_1UByQzLi0nDifNVEeQQT9Bhl,Small,38.00">Small - $38.00 (TEST)</option>
-                            <option value="price_1UBwIPLi0nDifNVEM8vCmMeV,Medium,38.00">Medium - $38.00</option>
-                            <option value="price_1UBwIPLi0nDifNVEjcnIJBkK,Large,38.00">Large - $38.00</option>
-                            <option value="price_1UBwIPLi0nDifNVEHgMF4rCt,X-Large,38.00">X-Large - $38.00</option>
-                            <option value="price_1UBpKWLi0nDifNVEg5eERCkK,2X-Large,39.00">2X-Large - $39.00</option>
-                            <option value="price_1UBpKWLi0nDifNVEYK8JX6VZ,3X-Large,40.00">3X-Large - $40.00</option>
-                            <option value="price_1UBpKXLi0nDifNVENE9m7bt5,Youth Medium,36.00">Youth Medium - $36.00</option>
-                            <option value="price_1UBwIPLi0nDifNVEIcxNjYmQ,Youth Large,36.00">Youth Large - $36.00</option>
-                            <option value="price_1UBwIPLi0nDifNVEIxjUJOBX,Youth X-Large,36.00">Youth X-Large - $36.00</option>
-                        </select>
-                        <label>Qty:</label>
-                        <input type="number" id="qty-item3" value="1" min="1">
-                    </div>
-                    <button class="btn-add" onclick="addItem('Hoodie','item3')">Add to Cart</button>
-                </div>
-                <div class="product-card">
-                    <div>
-                        <img class="product-image" id="image-item4" src="https://i.imgur.com/3wCAthF.png" alt="Sweatpants product image" onclick="syncLightboxFromThumbnail(this)">
-                        <div class="product-title">Sweatpants</div>
-                        <label>Color:</label>
-                        <select id="color-item4" onchange="updateProductImage('item4')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
-                        <label>Size:</label>
-                        <select id="size-item4">
-                            <option value="price_1UBpLsLi0nDifNVEs3I0adLV,Small,32.00">Small - $32.00</option>
-                            <option value="price_1UBwJsLi0nDifNVEYsDvAidX,Medium,32.00">Medium - $32.00</option>
-                            <option value="price_1UBwJsLi0nDifNVEnsKtF2GC,Large,32.00">Large - $32.00</option>
-                            <option value="price_1UBwJsLi0nDifNVEfsNb76Rr,X-Large,32.00">X-Large - $32.00</option>
-                            <option value="price_1UBpLsLi0nDifNVEZCN9SqoL,2X-Large,33.00">2X-Large - $33.00</option>
-                            <option value="price_1UBpLsLi0nDifNVERwqXU2bC,3X-Large,34.00">3X-Large - $34.00</option>
-                            <option value="price_1UBpLsLi0nDifNVEjM3z4xAf,Youth Medium,30.00">Youth Medium - $30.00</option>
-                            <option value="price_1UBwJsLi0nDifNVEmwQEXWmC,Youth Large,30.00">Youth Large - $30.00</option>
-                            <option value="price_1UBwJsLi0nDifNVEXhmM7XBq,Youth X-Large,30.00">Youth X-Large - $30.00</option>
-                        </select>
-                        <label>Qty:</label>
-                        <input type="number" id="qty-item4" value="1" min="1">
-                    </div>
-                    <button class="btn-add" onclick="addItem('Sweatpants','item4')">Add to Cart</button>
-                </div>
-                <div class="product-card">
-                    <div>
-                        <img class="product-image" id="image-item5" src="https://i.imgur.com/FMXKCCM.png" alt="Tote Bag product image" onclick="syncLightboxFromThumbnail(this)">
-                        <div class="product-title">Tote Bag</div>
-                        <label>Color:</label>
-                        <select id="color-item5" onchange="updateProductImage('item5')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option><option value="Natural">Natural</option></select>
-                        <label>Price:</label>
-                        <div style="padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9; color: #1f63af; font-weight: bold;">One Size - $17.00</div>
-                        <input type="hidden" id="size-item5" value="price_1UBwKlLi0nDifNVENSMsAvu6,One Size,17.00">
-                        <label>Qty:</label>
-                        <input type="number" id="qty-item5" value="1" min="1">
-                    </div>
-                    <button class="btn-add" onclick="addItem('Tote Bag','item5')">Add to Cart</button>
-                </div>
-                <div class="product-card">
-                    <div>
-                        <img class="product-image" id="image-item6" src="https://i.imgur.com/PQ0YPm7.png" alt="Jumbo Tote Bag product image" onclick="syncLightboxFromThumbnail(this)">
-                        <div class="product-title">Jumbo Tote Bag</div>
-                        <label>Color:</label>
-                        <select id="color-item6" onchange="updateProductImage('item6')"><option value="Black">Black</option><option value="Natural">Natural</option></select>
-                        <label>Price:</label>
-                        <div style="padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9; color: #1f63af; font-weight: bold;">One Size - $19.00</div>
-                        <input type="hidden" id="size-item6" value="price_1UBwM6Li0nDifNVEhYZp2lQb,One Size,19.00">
-                        <label>Qty:</label>
-                        <input type="number" id="qty-item6" value="1" min="1">
-                    </div>
-                    <button class="btn-add" onclick="addItem('Jumbo Tote Bag','item6')">Add to Cart</button>
-                </div>
+                <div class="product-card"><div><img class="product-image" id="image-item1" src="https://i.imgur.com/y3vDkf6.png" alt="T-Shirt product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">T-Shirt (TEST)</div><label>Color:</label><select id="color-item1" onchange="updateProductImage('item1')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select><label>Size:</label><select id="size-item1"><option value="price_1UByQ1Li0nDifNVEyfIPA28z,Small,16.00">Small - $16.00 (TEST)</option><option value="price_1UByQ1Li0nDifNVEgo9Bd48P,Medium,16.00">Medium - $16.00 (TEST)</option><option value="price_1UBwEOLi0nDifNVEzGYcYKZi,Large,16.00">Large - $16.00</option><option value="price_1UBwEOLi0nDifNVEp6478nvh,X-Large,16.00">X-Large - $16.00</option><option value="price_1UBpDBLi0nDifNVEIrGOaYzS,2X-Large,17.00">2X-Large - $17.00</option><option value="price_1UBpDBLi0nDifNVErFzMrto3,3X-Large,18.00">3X-Large - $18.00</option><option value="price_1UBpDBLi0nDifNVEdfYNtIxl,Youth Medium,14.00">Youth Medium - $14.00</option><option value="price_1UBwEOLi0nDifNVEhW9FQLN9,Youth Large,14.00">Youth Large - $14.00</option><option value="price_1UBwEOLi0nDifNVE1hFX9cwm,Youth X-Large,14.00">Youth X-Large - $14.00</option></select><label>Qty:</label><input type="number" id="qty-item1" value="1" min="1"></div><button class="btn-add" onclick="addItem('T-Shirt','item1')">Add to Cart</button></div>
+                <div class="product-card"><div><img class="product-image" id="image-item2" src="https://i.imgur.com/AViHWYP.png" alt="Zippered Hoodie product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">Zippered Hoodie</div><label>Color:</label><select id="color-item2" onchange="updateProductImage('item2')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select><label>Size:</label><select id="size-item2"><option value="price_1UBpG1Li0nDifNVEA7bz4kRw,Small,35.00">Small - $35.00</option><option value="price_1UBwFoLi0nDifNVEBfrzbmXa,Medium,35.00">Medium - $35.00</option><option value="price_1UBwFoLi0nDifNVE92EGFOq2,Large,35.00">Large - $35.00</option><option value="price_1UBwGeLi0nDifNVE1kgLUTAC,X-Large,35.00">X-Large - $35.00</option><option value="price_1UBpGTLi0nDifNVEoKObtdqr,2X-Large,36.00">2X-Large - $36.00</option><option value="price_1UBpGTLi0nDifNVEI7nE4vpR,3X-Large,37.00">3X-Large - $37.00</option><option value="price_1UBpG1Li0nDifNVERmjjAQfx,Youth Medium,33.00">Youth Medium - $33.00</option><option value="price_1UBwGeLi0nDifNVEV4ZVLsuz,Youth Large,33.00">Youth Large - $33.00</option><option value="price_1UBwGeLi0nDifNVE9pwM9xSK,Youth X-Large,33.00">Youth X-Large - $33.00</option></select><label>Qty:</label><input type="number" id="qty-item2" value="1" min="1"></div><button class="btn-add" onclick="addItem('Zippered Hoodie','item2')">Add to Cart</button></div>
+                <div class="product-card"><div><img class="product-image" id="image-item3" src="https://i.imgur.com/yktaUpI.png" alt="Hoodie product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">Hoodie (TEST)</div><label>Color:</label><select id="color-item3" onchange="updateProductImage('item3')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select><label>Size:</label><select id="size-item3"><option value="price_1UByQzLi0nDifNVEeQQT9Bhl,Small,38.00">Small - $38.00 (TEST)</option><option value="price_1UBwIPLi0nDifNVEM8vCmMeV,Medium,38.00">Medium - $38.00</option><option value="price_1UBwIPLi0nDifNVEjcnIJBkK,Large,38.00">Large - $38.00</option><option value="price_1UBwIPLi0nDifNVEHgMF4rCt,X-Large,38.00">X-Large - $38.00</option><option value="price_1UBpKWLi0nDifNVEg5eERCkK,2X-Large,39.00">2X-Large - $39.00</option><option value="price_1UBpKWLi0nDifNVEYK8JX6VZ,3X-Large,40.00">3X-Large - $40.00</option><option value="price_1UBpKXLi0nDifNVENE9m7bt5,Youth Medium,36.00">Youth Medium - $36.00</option><option value="price_1UBwIPLi0nDifNVEIcxNjYmQ,Youth Large,36.00">Youth Large - $36.00</option><option value="price_1UBwIPLi0nDifNVEIxjUJOBX,Youth X-Large,36.00">Youth X-Large - $36.00</option></select><label>Qty:</label><input type="number" id="qty-item3" value="1" min="1"></div><button class="btn-add" onclick="addItem('Hoodie','item3')">Add to Cart</button></div>
+                <div class="product-card"><div><img class="product-image" id="image-item4" src="https://i.imgur.com/3wCAthF.png" alt="Sweatpants product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">Sweatpants</div><label>Color:</label><select id="color-item4" onchange="updateProductImage('item4')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select><label>Size:</label><select id="size-item4"><option value="price_1UBpLsLi0nDifNVEs3I0adLV,Small,32.00">Small - $32.00</option><option value="price_1UBwJsLi0nDifNVEYsDvAidX,Medium,32.00">Medium - $32.00</option><option value="price_1UBwJsLi0nDifNVEnsKtF2GC,Large,32.00">Large - $32.00</option><option value="price_1UBwJsLi0nDifNVEfsNb76Rr,X-Large,32.00">X-Large - $32.00</option><option value="price_1UBpLsLi0nDifNVEZCN9SqoL,2X-Large,33.00">2X-Large - $33.00</option><option value="price_1UBpLsLi0nDifNVERwqXU2bC,3X-Large,34.00">3X-Large - $34.00</option><option value="price_1UBpLsLi0nDifNVEjM3z4xAf,Youth Medium,30.00">Youth Medium - $30.00</option><option value="price_1UBwJsLi0nDifNVEmwQEXWmC,Youth Large,30.00">Youth Large - $30.00</option><option value="price_1UBwJsLi0nDifNVEXhmM7XBq,Youth X-Large,30.00">Youth X-Large - $30.00</option></select><label>Qty:</label><input type="number" id="qty-item4" value="1" min="1"></div><button class="btn-add" onclick="addItem('Sweatpants','item4')">Add to Cart</button></div>
+                <div class="product-card"><div><img class="product-image" id="image-item5" src="https://i.imgur.com/FMXKCCM.png" alt="Tote Bag product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">Tote Bag</div><label>Color:</label><select id="color-item5" onchange="updateProductImage('item5')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option><option value="Natural">Natural</option></select><label>Price:</label><div style="padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9; color: #1f63af; font-weight: bold;">One Size - $17.00</div><input type="hidden" id="size-item5" value="price_1UBwKlLi0nDifNVENSMsAvu6,One Size,17.00"><label>Qty:</label><input type="number" id="qty-item5" value="1" min="1"></div><button class="btn-add" onclick="addItem('Tote Bag','item5')">Add to Cart</button></div>
+                <div class="product-card"><div><img class="product-image" id="image-item6" src="https://i.imgur.com/PQ0YPm7.png" alt="Jumbo Tote Bag product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">Jumbo Tote Bag</div><label>Color:</label><select id="color-item6" onchange="updateProductImage('item6')"><option value="Black">Black</option><option value="Natural">Natural</option></select><label>Price:</label><div style="padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9; color: #1f63af; font-weight: bold;">One Size - $19.00</div><input type="hidden" id="size-item6" value="price_1UBwM6Li0nDifNVEhYZp2lQb,One Size,19.00"><label>Qty:</label><input type="number" id="qty-item6" value="1" min="1"></div><button class="btn-add" onclick="addItem('Jumbo Tote Bag','item6')">Add to Cart</button></div>
             </div>
         </div>
         <div>
@@ -257,17 +249,14 @@
         const variationSelect = document.getElementById(`size-${elementId}`);
         const colorSelect = document.getElementById(`color-${elementId}`);
         const qtyInput = document.getElementById(`qty-${elementId}`);
-
         const colorValue = colorSelect ? colorSelect.value : 'Standard';
         const [stripePriceId, sizeName, priceVal] = (variationSelect.value || '').split(',');
         const price = parseFloat(priceVal || '0');
         const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
-
         if (!stripePriceId || stripePriceId === 'price_PASTE_ID_HERE') {
             alert('Error: missing price ID for this item. Please contact the store admin.');
             return;
         }
-
         const existingIndex = cart.findIndex(c => c.name === itemName && c.size === sizeName && c.color === colorValue);
         if (existingIndex >= 0) {
             cart[existingIndex].qty += qty;
