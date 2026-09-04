@@ -1,9 +1,6 @@
 {
-  "name": "njys-store",
-  "version": "1.0.0",
-  "description": "NJYS Web Store",
-  "private": true,
-  "dependencies": {
-    "stripe": "^14.0.0"
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "npm install"
   }
 }
