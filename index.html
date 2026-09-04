@@ -9,29 +9,33 @@
     <script src="https://js.stripe.com/v3/"></script>
 
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; color: #fff; max-width: 1000px; margin: 0 auto; background-color: #1f63af; min-height: 100vh; }
-        h1, h2 { border-bottom: 2px solid #fff; padding-bottom: 8px; color: #fff; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; color: #333; max-width: 1000px; margin: 0 auto; background-color: #1f63af; min-height: 100vh; }
+        h1, h2 { border-bottom: 2px solid #ffc700; padding-bottom: 8px; color: #fff; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media(min-width: 768px) { .grid { grid-template-columns: 2fr 1fr; } }
         .products-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
         @media(min-width: 480px) { .products-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } }
-        .product-card { border: 1px solid #135fa0; padding: 15px; border-radius: 8px; background: #1a55a0; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; flex-direction: column; justify-content: space-between; }
-        .product-title { font-size: 16px; font-weight: bold; margin: 0 0 10px 0; min-height: 38px; color: #fff; }
-        label { display: block; font-size: 12px; font-weight: bold; margin-top: 10px; margin-bottom: 3px; color: #e8f0f7; }
-        select, input, button { padding: 8px; font-size: 14px; border-radius: 4px; border: 1px solid #135fa0; box-sizing: border-box; width: 100%; background-color: #f5f5f5; color: #333; }
+        .product-card { border: none; padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: space-between; }
+        .product-title { font-size: 18px; font-weight: bold; margin: 0 0 12px 0; min-height: 38px; color: #1f63af; }
+        label { display: block; font-size: 12px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; color: #333; }
+        select, input { padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; width: 100%; background-color: #f9f9f9; color: #333; }
+        select:focus, input:focus { outline: none; border-color: #1f63af; background-color: #fff; }
         input[type="number"] { max-width: 70px; }
         input[type="text"], input[type="email"] { padding: 10px; margin-bottom: 10px; }
-        .cart-panel, .student-panel { border: 1px solid #135fa0; padding: 20px; border-radius: 8px; background: #1a55a0; height: fit-content; }
-        .cart-item { display: flex; justify-content: space-between; border-bottom: 1px solid #135fa0; padding: 8px 0; font-size: 14px; color: #fff; }
+        .cart-panel, .student-panel { border: none; padding: 20px; border-radius: 12px; background: #fff; height: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .cart-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; font-size: 14px; color: #333; }
+        .cart-item:last-child { border-bottom: none; }
         .remove-btn { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 12px; width: auto; display: inline; font-weight: bold; }
-        .total-box { font-size: 18px; font-weight: bold; margin-top: 15px; text-align: right; color: #fff; }
-        .btn-add { background-color: #ffc700; color: #1f63af; border: none; cursor: pointer; font-weight: bold; margin-top: 12px; }
-        .btn-add:hover { background-color: #ffdb4d; }
-        .btn-checkout { background-color: #ffc700; color: #1f63af; border: none; width: 100%; padding: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; }
-        .btn-checkout:hover:not(:disabled) { background-color: #ffdb4d; }
-        .btn-checkout:disabled { background-color: #888; color: #ccc; cursor: not-allowed; }
+        .remove-btn:hover { color: #ff4d4d; }
+        .total-box { font-size: 20px; font-weight: bold; margin-top: 15px; text-align: right; color: #1f63af; padding-top: 12px; border-top: 2px solid #eee; }
+        .btn-add { background-color: #ffc700; color: #1f63af; border: none; cursor: pointer; font-weight: bold; margin-top: 15px; padding: 12px 16px; border-radius: 8px; font-size: 15px; transition: all 0.3s ease; }
+        .btn-add:hover { background-color: #ffdb4d; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(255, 199, 0, 0.3); }
+        .btn-checkout { background-color: #ffc700; color: #1f63af; border: none; width: 100%; padding: 14px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; border-radius: 8px; transition: all 0.3s ease; }
+        .btn-checkout:hover:not(:disabled) { background-color: #ffdb4d; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 199, 0, 0.3); }
+        .btn-checkout:disabled { background-color: #ccc; color: #999; cursor: not-allowed; }
         .validation-hint { font-size: 12px; color: #e8f0f7; margin-top: 8px; font-style: italic; }
-        .info-message { background: rgba(255,199,0,0.15); border-left: 4px solid #ffc700; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #e8f0f7; }
+        .info-message { background: #fff; border-left: 4px solid #ffc700; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; color: #333; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .student-panel h2 { color: #1f63af; }
     </style>
 </head>
 <body>
@@ -193,7 +197,7 @@
                             <option value="Natural">Natural</option>
                         </select>
                         <label>Price:</label>
-                        <div style="padding: 8px; font-size: 14px; border-radius: 4px; border: 1px solid #135fa0; background: rgba(255,255,255,0.1); color: #fff;">One Size - $17.00</div>
+                        <div style="padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9; color: #1f63af; font-weight: bold;">One Size - $17.00</div>
                         <input type="hidden" id="size-item5" value="price_1UBwKlLi0nDifNVENSMsAvu6,One Size,17.00">
                         <label>Qty:</label>
                         <input type="number" id="qty-item5" value="1" min="1">
@@ -211,7 +215,7 @@
                             <option value="Natural">Natural</option>
                         </select>
                         <label>Price:</label>
-                        <div style="padding: 8px; font-size: 14px; border-radius: 4px; border: 1px solid #135fa0; background: rgba(255,255,255,0.1); color: #fff;">One Size - $19.00</div>
+                        <div style="padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9; color: #1f63af; font-weight: bold;">One Size - $19.00</div>
                         <input type="hidden" id="size-item6" value="price_1UBwM6Li0nDifNVEhYZp2lQb,One Size,19.00">
                         <label>Qty:</label>
                         <input type="number" id="qty-item6" value="1" min="1">
