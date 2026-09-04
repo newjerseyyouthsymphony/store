@@ -3,6 +3,12 @@ import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// Expect PRICE_WHITELIST as a comma-separated list of allowed price IDs
+function getAllowedPrices() {
+  const raw = process.env.PRICE_WHITELIST || '';
+  return new Set(raw.split(',').map(s => s.trim()).filter(Boolean));
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -13,7 +19,27 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Cart is empty' });
     }
 
-    const line_items = cart.map(item => ({ price: item.id, quantity: item.qty }));
+    const allowed = getAllowedPrices();
+    if (allowed.size === 0) {
+      console.error('PRICE_WHITELIST not configured (env PRICE_WHITELIST).');
+      return res.status(500).json({ error: 'Server misconfiguration: PRICE_WHITELIST is not set.' });
+    }
+
+    // Validate and sanitize cart items
+    const line_items = [];
+    for (const item of cart) {
+      if (!item || typeof item.id !== 'string') {
+        return res.status(400).json({ error: 'Invalid cart item format' });
+      }
+      const priceId = item.id;
+      const qty = Math.max(1, parseInt(item.qty || 1, 10) || 1);
+
+      if (!allowed.has(priceId)) {
+        return res.status(400).json({ error: `Invalid price id: ${priceId}` });
+      }
+
+      line_items.push({ price: priceId, quantity: qty });
+    }
 
     const origin = process.env.ORIGIN || `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
 
@@ -23,8 +49,8 @@ export default async function handler(req, res) {
       mode: 'payment',
       customer_email: email || undefined,
       metadata: {
-        student_name: studentName || '',
-        ensemble_name: ensembleName || ''
+        student_name: typeof studentName === 'string' ? studentName : '',
+        ensemble_name: typeof ensembleName === 'string' ? ensembleName : ''
       },
       success_url: `${origin}/thank-you.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}`
