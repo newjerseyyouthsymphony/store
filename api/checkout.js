@@ -31,7 +31,11 @@ module.exports = async function handler(req, res) {
       }
 
       const stripePrice = await getStripePrice(priceId);
-      if (stripePrice.billing_scheme !== 'per_unit' || !Number.isInteger(stripePrice.unit_amount)) {
+      if (
+        stripePrice.billing_scheme !== 'per_unit'
+        || !Number.isInteger(stripePrice.unit_amount)
+        || stripePrice.tax_behavior === 'unspecified'
+      ) {
         return { price: priceId, quantity };
       }
 
@@ -49,7 +53,7 @@ module.exports = async function handler(req, res) {
         product_data: { name: displayName },
       };
 
-      if (stripePrice.tax_behavior && stripePrice.tax_behavior !== 'unspecified') {
+      if (stripePrice.tax_behavior) {
         priceData.tax_behavior = stripePrice.tax_behavior;
       }
 
