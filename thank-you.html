@@ -5,55 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thank You - NJYS Store</title>
     <style>
+        :root {
+            --njys-blue: #1f63af;
+            --njys-blue-2: #4a9ee6;
+            --njys-blue-3: #6db3f2;
+            --njys-navy: #123e73;
+            --panel: rgba(255, 255, 255, 0.96);
+        }
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             padding: 20px;
             color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            background: linear-gradient(135deg, #635bff 0%, #0a2540 100%);
+            margin: 0;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            background:
+                radial-gradient(circle at top, rgba(255,255,255,0.18), transparent 30%),
+                linear-gradient(180deg, var(--njys-blue) 0%, var(--njys-navy) 100%);
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+            background-size: 36px 36px;
+            opacity: 0.18;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0));
         }
         .container {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            width: min(720px, 100%);
+            background: var(--panel);
+            padding: 36px 28px;
+            border-radius: 20px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
             text-align: center;
-        }
-        h1 {
-            color: #635bff;
-            margin-bottom: 10px;
-            font-size: 2.5em;
+            border: 1px solid rgba(255,255,255,0.18);
+            backdrop-filter: blur(6px);
         }
         .checkmark {
-            font-size: 4em;
-            margin-bottom: 20px;
+            display: inline-grid;
+            place-items: center;
+            width: 76px;
+            height: 76px;
+            margin-bottom: 18px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--njys-blue-3), var(--njys-blue-2));
+            color: #fff;
+            font-size: 2.4rem;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(74, 158, 230, 0.3);
+        }
+        h1 {
+            color: var(--njys-blue);
+            margin: 0 0 10px;
+            font-size: clamp(2rem, 4vw, 2.8rem);
         }
         p {
-            font-size: 1.1em;
+            font-size: 1.05em;
             line-height: 1.6;
-            margin: 15px 0;
-            color: #555;
+            margin: 14px 0;
+            color: #4a5568;
         }
         .info-box {
-            background: #f0f4ff;
+            background: linear-gradient(180deg, #f4f8fd, #eef4fb);
             padding: 20px;
-            border-radius: 8px;
-            margin: 25px 0;
-            border-left: 4px solid #635bff;
+            border-radius: 14px;
+            margin: 24px 0;
+            border-left: 5px solid var(--njys-blue-3);
             text-align: left;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
         }
-        .info-box p {
-            margin: 8px 0;
-        }
-        .label {
-            font-weight: bold;
-            color: #0a2540;
-        }
+        .info-box p { margin: 8px 0; }
+        .label { font-weight: bold; color: var(--njys-navy); }
         .button-group {
             margin-top: 30px;
             display: flex;
@@ -64,38 +94,40 @@
         a, button {
             padding: 12px 30px;
             font-size: 1em;
-            border-radius: 6px;
+            border-radius: 10px;
             text-decoration: none;
             border: none;
             cursor: pointer;
             font-weight: bold;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
         .btn-primary {
-            background-color: #635bff;
+            background: linear-gradient(135deg, var(--njys-blue-3), var(--njys-blue-2));
             color: white;
         }
         .btn-primary:hover {
-            background-color: #0a2540;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(99, 91, 255, 0.3);
+            box-shadow: 0 8px 18px rgba(74, 158, 230, 0.3);
         }
         .btn-secondary {
-            background-color: #f0f4ff;
-            color: #635bff;
-            border: 2px solid #635bff;
+            background: #f0f4ff;
+            color: var(--njys-blue);
+            border: 2px solid rgba(31,99,175,0.2);
         }
         .btn-secondary:hover {
-            background-color: #635bff;
+            background: var(--njys-blue);
             color: white;
+            border-color: var(--njys-blue);
+            transform: translateY(-2px);
         }
         .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            font-size: 0.9em;
-            color: #999;
+            margin-top: 34px;
+            padding-top: 18px;
+            border-top: 1px solid #e6edf6;
+            font-size: 0.92em;
+            color: #6b7280;
         }
+        .footer p { margin-bottom: 0; }
     </style>
 </head>
 <body>
@@ -103,7 +135,7 @@
         <div class="checkmark">✓</div>
         <h1>Thank You!</h1>
         <p>Your order has been successfully placed.</p>
-        
+
         <div class="info-box">
             <p><span class="label">Order Status:</span> Processing</p>
             <p>You will receive a confirmation email shortly with your order details.</p>
@@ -114,7 +146,7 @@
 
         <div class="button-group">
             <a href="/" class="btn-primary">Return to Store</a>
-            <a href="https://www.njys.org" class="btn-secondary" target="_blank">Visit NJYS Website</a>
+            <a href="https://www.njys.org" class="btn-secondary" target="_blank" rel="noreferrer">Visit NJYS Website</a>
         </div>
 
         <div class="footer">
