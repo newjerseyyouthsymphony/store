@@ -14,6 +14,14 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid line items' });
     }
 
+    const stripePriceCache = new Map();
+    const getStripePrice = async (priceId) => {
+      if (!stripePriceCache.has(priceId)) {
+        stripePriceCache.set(priceId, stripe.prices.retrieve(priceId, { expand: ['product'] }));
+      }
+      return stripePriceCache.get(priceId);
+    };
+
     const stripeLineItems = await Promise.all(lineItems.map(async (item) => {
       const priceId = typeof item?.price === 'string' ? item.price.trim() : '';
       const quantity = Number.isInteger(item?.quantity) ? item.quantity : Number.parseInt(item?.quantity, 10);
@@ -22,9 +30,9 @@ module.exports = async function handler(req, res) {
         throw new Error('Invalid line item payload');
       }
 
-      const stripePrice = await stripe.prices.retrieve(priceId, { expand: ['product'] });
-      if (!Number.isInteger(stripePrice.unit_amount)) {
-        throw new Error(`Unsupported Stripe price for ${priceId}`);
+      const stripePrice = await getStripePrice(priceId);
+      if (stripePrice.billing_scheme !== 'per_unit' || !Number.isInteger(stripePrice.unit_amount)) {
+        return { price: priceId, quantity };
       }
 
       const fallbackName = stripePrice.product && typeof stripePrice.product !== 'string'
