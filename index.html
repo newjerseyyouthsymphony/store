@@ -10,7 +10,7 @@
 
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; color: #333; max-width: 1000px; margin: 0 auto; background-color: #1f63af; min-height: 100vh; }
-        h1, h2 { border-bottom: 2px solid #ffc700; padding-bottom: 8px; color: #fff; }
+        h1, h2 { border-bottom: 2px solid #6db3f2; padding-bottom: 8px; color: #fff; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media(min-width: 768px) { .grid { grid-template-columns: 2fr 1fr; } }
         .products-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
@@ -28,13 +28,13 @@
         .remove-btn { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 12px; width: auto; display: inline; font-weight: bold; }
         .remove-btn:hover { color: #ff4d4d; }
         .total-box { font-size: 20px; font-weight: bold; margin-top: 15px; text-align: right; color: #1f63af; padding-top: 12px; border-top: 2px solid #eee; }
-        .btn-add { background-color: #ffc700; color: #1f63af; border: none; cursor: pointer; font-weight: bold; margin-top: 15px; padding: 12px 16px; border-radius: 8px; font-size: 15px; transition: all 0.3s ease; }
-        .btn-add:hover { background-color: #ffdb4d; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(255, 199, 0, 0.3); }
-        .btn-checkout { background-color: #ffc700; color: #1f63af; border: none; width: 100%; padding: 14px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; border-radius: 8px; transition: all 0.3s ease; }
-        .btn-checkout:hover:not(:disabled) { background-color: #ffdb4d; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 199, 0, 0.3); }
+        .btn-add { background-color: #6db3f2; color: #fff; border: none; cursor: pointer; font-weight: bold; margin-top: 15px; padding: 12px 16px; border-radius: 8px; font-size: 15px; transition: all 0.3s ease; }
+        .btn-add:hover { background-color: #4a9ee6; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(109, 179, 242, 0.3); }
+        .btn-checkout { background-color: #6db3f2; color: #fff; border: none; width: 100%; padding: 14px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; border-radius: 8px; transition: all 0.3s ease; }
+        .btn-checkout:hover:not(:disabled) { background-color: #4a9ee6; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(109, 179, 242, 0.3); }
         .btn-checkout:disabled { background-color: #ccc; color: #999; cursor: not-allowed; }
         .validation-hint { font-size: 12px; color: #e8f0f7; margin-top: 8px; font-style: italic; }
-        .info-message { background: #fff; border-left: 4px solid #ffc700; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; color: #333; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .info-message { background: #fff; border-left: 4px solid #6db3f2; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; color: #333; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .student-panel h2 { color: #1f63af; }
     </style>
 </head>
