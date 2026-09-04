@@ -9,32 +9,37 @@
     <script src="https://js.stripe.com/v3/"></script>
 
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; color: #333; max-width: 1000px; margin: 0 auto; background-color: #1f63af; min-height: 100vh; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; color: #333; max-width: 1400px; margin: 0 auto; background-color: #1f63af; min-height: 100vh; }
         h1, h2 { border-bottom: 2px solid #6db3f2; padding-bottom: 8px; color: #fff; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media(min-width: 768px) { .grid { grid-template-columns: 2fr 1fr; } }
+        @media(min-width: 1024px) { .grid { grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr); align-items: start; } }
         .products-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        @media(min-width: 480px) { .products-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } }
-        .product-card { border: none; padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: space-between; }
-        .product-title { font-size: 18px; font-weight: bold; margin: 0 0 12px 0; min-height: 38px; color: #1f63af; }
-        label { display: block; font-size: 12px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; color: #333; }
+        @media(min-width: 640px) { .products-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media(min-width: 1100px) { .products-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .product-card { border: none; padding: 16px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+        .product-image { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; background: #f4f7fb; object-fit: cover; border: 1px solid #e5ecf5; }
+        .product-title { font-size: 18px; font-weight: bold; margin: 0 0 8px 0; min-height: 38px; color: #1f63af; }
+        label { display: block; font-size: 12px; font-weight: bold; margin-top: 8px; margin-bottom: 5px; color: #333; }
         select, input { padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; width: 100%; background-color: #f9f9f9; color: #333; }
         select:focus, input:focus { outline: none; border-color: #1f63af; background-color: #fff; }
         input[type="number"] { max-width: 70px; }
         input[type="text"], input[type="email"] { padding: 10px; margin-bottom: 10px; }
         .cart-panel, .student-panel { border: none; padding: 20px; border-radius: 12px; background: #fff; height: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        @media(min-width: 1024px) { .cart-panel { position: sticky; top: 20px; } }
         .cart-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; font-size: 14px; color: #333; }
         .cart-item:last-child { border-bottom: none; }
         .remove-btn { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 12px; width: auto; display: inline; font-weight: bold; }
         .remove-btn:hover { color: #ff4d4d; }
         .total-box { font-size: 20px; font-weight: bold; margin-top: 15px; text-align: right; color: #1f63af; padding-top: 12px; border-top: 2px solid #eee; }
-        .btn-add { background-color: #6db3f2; color: #fff; border: none; cursor: pointer; font-weight: bold; margin-top: 15px; padding: 12px 16px; border-radius: 8px; font-size: 15px; transition: all 0.3s ease; }
+        .btn-add { background-color: #6db3f2; color: #fff; border: none; cursor: pointer; font-weight: bold; margin-top: 8px; padding: 12px 16px; border-radius: 8px; font-size: 15px; transition: all 0.2s ease; }
         .btn-add:hover { background-color: #4a9ee6; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(109, 179, 242, 0.3); }
-        .btn-checkout { background-color: #6db3f2; color: #fff; border: none; width: 100%; padding: 14px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; border-radius: 8px; transition: all 0.3s ease; }
+        .btn-checkout { background-color: #6db3f2; color: #fff; border: none; width: 100%; padding: 14px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; border-radius: 8px; transition: all 0.2s ease; }
         .btn-checkout:hover:not(:disabled) { background-color: #4a9ee6; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(109, 179, 242, 0.3); }
         .btn-checkout:disabled { background-color: #ccc; color: #999; cursor: not-allowed; }
         .validation-hint { font-size: 12px; color: #e8f0f7; margin-top: 8px; font-style: italic; }
         .student-panel h2 { color: #1f63af; }
+        .customer-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media(min-width: 900px) { .customer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     </style>
 </head>
 <body>
@@ -42,22 +47,65 @@
         // Global variables initialized at the top
         let cart = [];
         let stripe = null;
+
+        const productImages = {
+            item1: {
+                Black: 'https://i.imgur.com/y3vDkf6.png',
+                Grey: 'https://i.imgur.com/E4iS8Po.png',
+                Navy: 'https://i.imgur.com/Cn1ZnRM.png'
+            },
+            item2: {
+                Black: 'https://i.imgur.com/AViHWYP.png',
+                Grey: 'https://i.imgur.com/vBDbFvg.png',
+                Navy: 'https://i.imgur.com/GU7CFAc.png'
+            },
+            item3: {
+                Black: 'https://i.imgur.com/yktaUpI.png',
+                Grey: 'https://i.imgur.com/8ObsBld.png',
+                Navy: 'https://i.imgur.com/znjYaKL.png'
+            },
+            item4: {
+                Black: 'https://i.imgur.com/3wCAthF.png',
+                Grey: 'https://i.imgur.com/IL6qQfu.png',
+                Navy: 'https://i.imgur.com/TjGO51U.png'
+            },
+            item5: {
+                Black: 'https://i.imgur.com/FMXKCCM.png',
+                Grey: 'https://i.imgur.com/HZ6XwDA.png',
+                Navy: 'https://i.imgur.com/A1jkTxT.png',
+                Natural: 'https://i.imgur.com/QsU2pXv.png'
+            },
+            item6: {
+                Black: 'https://i.imgur.com/PQ0YPm7.png',
+                Natural: 'https://i.imgur.com/Q33GnwD.png'
+            }
+        };
+
+        function updateProductImage(elementId) {
+            const colorSelect = document.getElementById(`color-${elementId}`);
+            const imageElement = document.getElementById(`image-${elementId}`);
+            if (!colorSelect || !imageElement) return;
+
+            const colorValue = colorSelect.value;
+            const imageUrl = productImages[elementId]?.[colorValue];
+            if (imageUrl) imageElement.src = imageUrl;
+        }
     </script>
 
     <h1>NJYS Merch Store</h1>
 
     <div class="student-panel" style="margin-bottom: 20px;">
         <h2>Customer Info</h2>
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;">
+        <div class="customer-grid">
+            <div>
                 <label>Student Full Name:</label>
                 <input type="text" id="studentInput" placeholder="e.g. Jane Doe" oninput="validateForm()">
             </div>
-            <div style="flex: 1; min-width: 200px;">
+            <div>
                 <label>Ensemble Name:</label>
                 <input type="text" id="ensembleInput" placeholder="e.g. Youth Symphony" oninput="validateForm()">
             </div>
-            <div style="flex: 1; min-width: 200px;">
+            <div>
                 <label>Parent Email:</label>
                 <input type="email" id="emailInput" placeholder="e.g. parent@email.com" oninput="validateForm()">
             </div>
@@ -71,9 +119,10 @@
                 <!-- Item 1: T-Shirt (TEST MODE) -->
                 <div class="product-card">
                     <div>
+                        <img class="product-image" id="image-item1" src="https://i.imgur.com/y3vDkf6.png" alt="T-Shirt product image">
                         <div class="product-title">T-Shirt (TEST)</div>
                         <label>Color:</label>
-                        <select id="color-item1">
+                        <select id="color-item1" onchange="updateProductImage('item1')">
                             <option value="Black">Black</option>
                             <option value="Grey">Grey</option>
                             <option value="Navy">Navy</option>
@@ -99,9 +148,10 @@
                 <!-- Item 2: Zippered Hoodie -->
                 <div class="product-card">
                     <div>
+                        <img class="product-image" id="image-item2" src="https://i.imgur.com/AViHWYP.png" alt="Zippered Hoodie product image">
                         <div class="product-title">Zippered Hoodie</div>
                         <label>Color:</label>
-                        <select id="color-item2">
+                        <select id="color-item2" onchange="updateProductImage('item2')">
                             <option value="Black">Black</option>
                             <option value="Grey">Grey</option>
                             <option value="Navy">Navy</option>
@@ -127,9 +177,10 @@
                 <!-- Item 3: Hoodie (TEST MODE) -->
                 <div class="product-card">
                     <div>
+                        <img class="product-image" id="image-item3" src="https://i.imgur.com/yktaUpI.png" alt="Hoodie product image">
                         <div class="product-title">Hoodie (TEST)</div>
                         <label>Color:</label>
-                        <select id="color-item3">
+                        <select id="color-item3" onchange="updateProductImage('item3')">
                             <option value="Black">Black</option>
                             <option value="Grey">Grey</option>
                             <option value="Navy">Navy</option>
@@ -155,9 +206,10 @@
                 <!-- Item 4: Sweatpants -->
                 <div class="product-card">
                     <div>
+                        <img class="product-image" id="image-item4" src="https://i.imgur.com/3wCAthF.png" alt="Sweatpants product image">
                         <div class="product-title">Sweatpants</div>
                         <label>Color:</label>
-                        <select id="color-item4">
+                        <select id="color-item4" onchange="updateProductImage('item4')">
                             <option value="Black">Black</option>
                             <option value="Grey">Grey</option>
                             <option value="Navy">Navy</option>
@@ -183,9 +235,10 @@
                 <!-- Item 5: Tote Bag (One Size) -->
                 <div class="product-card">
                     <div>
+                        <img class="product-image" id="image-item5" src="https://i.imgur.com/FMXKCCM.png" alt="Tote Bag product image">
                         <div class="product-title">Tote Bag</div>
                         <label>Color:</label>
-                        <select id="color-item5">
+                        <select id="color-item5" onchange="updateProductImage('item5')">
                             <option value="Black">Black</option>
                             <option value="Grey">Grey</option>
                             <option value="Navy">Navy</option>
@@ -203,9 +256,10 @@
                 <!-- Item 6: Jumbo Tote Bag (One Size) -->
                 <div class="product-card">
                     <div>
+                        <img class="product-image" id="image-item6" src="https://i.imgur.com/PQ0YPm7.png" alt="Jumbo Tote Bag product image">
                         <div class="product-title">Jumbo Tote Bag</div>
                         <label>Color:</label>
-                        <select id="color-item6">
+                        <select id="color-item6" onchange="updateProductImage('item6')">
                             <option value="Black">Black</option>
                             <option value="Natural">Natural</option>
                         </select>
@@ -383,6 +437,8 @@
         } else {
             console.error('Stripe.js did not load. Check the script src.');
         }
+
+        ['item1', 'item2', 'item3', 'item4', 'item5', 'item6'].forEach(updateProductImage);
     });
 </script>
 </body>
