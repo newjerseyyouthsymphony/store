@@ -9,19 +9,21 @@
     <script src="https://js.stripe.com/v3/"></script>
 
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; color: #333; max-width: 1000px; margin: 0 auto; background-color: #1f63af; min-height: 100vh; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px 24px 40px; color: #333; max-width: 1440px; margin: 0 auto; background-color: #1f63af; min-height: 100vh; box-sizing: border-box; }
         h1, h2 { border-bottom: 2px solid #6db3f2; padding-bottom: 8px; color: #fff; }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media(min-width: 768px) { .grid { grid-template-columns: 2fr 1fr; } }
-        .products-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        @media(min-width: 480px) { .products-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } }
-        .product-card { border: none; padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: space-between; }
-        .product-title { font-size: 18px; font-weight: bold; margin: 0 0 12px 0; min-height: 38px; color: #1f63af; }
-        label { display: block; font-size: 12px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; color: #333; }
+        .customer-panel { margin-bottom: 24px; }
+        .customer-fields { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+        .customer-field { flex: 1 1 220px; min-width: 0; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
+        .products-list { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .product-card { border: none; padding: 16px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
+        .product-card-body { display: grid; gap: 8px; }
+        .product-title { font-size: 18px; font-weight: bold; margin: 0 0 4px 0; min-height: 44px; color: #1f63af; }
+        label { display: block; font-size: 12px; font-weight: bold; margin: 0; color: #333; }
         select, input { padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; width: 100%; background-color: #f9f9f9; color: #333; }
         select:focus, input:focus { outline: none; border-color: #1f63af; background-color: #fff; }
         input[type="number"] { max-width: 70px; }
-        input[type="text"], input[type="email"] { padding: 10px; margin-bottom: 10px; }
+        input[type="text"], input[type="email"] { padding: 10px; }
         .cart-panel, .student-panel { border: none; padding: 20px; border-radius: 12px; background: #fff; height: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .cart-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; font-size: 14px; color: #333; }
         .cart-item:last-child { border-bottom: none; }
@@ -35,6 +37,13 @@
         .btn-checkout:disabled { background-color: #ccc; color: #999; cursor: not-allowed; }
         .validation-hint { font-size: 12px; color: #e8f0f7; margin-top: 8px; font-style: italic; }
         .student-panel h2 { color: #1f63af; }
+        @media(min-width: 700px) { .products-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media(min-width: 960px) {
+            .grid { grid-template-columns: minmax(0, 2.4fr) minmax(300px, 1fr); }
+            .cart-column { position: sticky; top: 20px; align-self: start; }
+        }
+        @media(min-width: 1280px) { .products-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media(max-width: 767px) { body { padding: 16px; } }
     </style>
 </head>
 <body>
@@ -46,18 +55,18 @@
 
     <h1>NJYS Merch Store</h1>
 
-    <div class="student-panel" style="margin-bottom: 20px;">
+    <div class="student-panel customer-panel">
         <h2>Customer Info</h2>
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;">
+        <div class="customer-fields">
+            <div class="customer-field">
                 <label>Student Full Name:</label>
                 <input type="text" id="studentInput" placeholder="e.g. Jane Doe" oninput="validateForm()">
             </div>
-            <div style="flex: 1; min-width: 200px;">
+            <div class="customer-field">
                 <label>Ensemble Name:</label>
                 <input type="text" id="ensembleInput" placeholder="e.g. Youth Symphony" oninput="validateForm()">
             </div>
-            <div style="flex: 1; min-width: 200px;">
+            <div class="customer-field">
                 <label>Parent Email:</label>
                 <input type="email" id="emailInput" placeholder="e.g. parent@email.com" oninput="validateForm()">
             </div>
@@ -70,7 +79,7 @@
             <div class="products-list">
                 <!-- Item 1: T-Shirt (TEST MODE) -->
                 <div class="product-card">
-                    <div>
+                    <div class="product-card-body">
                         <div class="product-title">T-Shirt (TEST)</div>
                         <label>Color:</label>
                         <select id="color-item1">
@@ -98,7 +107,7 @@
 
                 <!-- Item 2: Zippered Hoodie -->
                 <div class="product-card">
-                    <div>
+                    <div class="product-card-body">
                         <div class="product-title">Zippered Hoodie</div>
                         <label>Color:</label>
                         <select id="color-item2">
@@ -126,7 +135,7 @@
                
                 <!-- Item 3: Hoodie (TEST MODE) -->
                 <div class="product-card">
-                    <div>
+                    <div class="product-card-body">
                         <div class="product-title">Hoodie (TEST)</div>
                         <label>Color:</label>
                         <select id="color-item3">
@@ -154,7 +163,7 @@
 
                 <!-- Item 4: Sweatpants -->
                 <div class="product-card">
-                    <div>
+                    <div class="product-card-body">
                         <div class="product-title">Sweatpants</div>
                         <label>Color:</label>
                         <select id="color-item4">
@@ -182,7 +191,7 @@
 
                 <!-- Item 5: Tote Bag (One Size) -->
                 <div class="product-card">
-                    <div>
+                    <div class="product-card-body">
                         <div class="product-title">Tote Bag</div>
                         <label>Color:</label>
                         <select id="color-item5">
@@ -202,7 +211,7 @@
 
                 <!-- Item 6: Jumbo Tote Bag (One Size) -->
                 <div class="product-card">
-                    <div>
+                    <div class="product-card-body">
                         <div class="product-title">Jumbo Tote Bag</div>
                         <label>Color:</label>
                         <select id="color-item6">
@@ -220,7 +229,7 @@
             </div>
         </div>
 
-        <div>
+        <div class="cart-column">
             <h2>Your Shopping Cart</h2>
             <div class="cart-panel">
                 <div id="cartItems">Your cart is empty.</div>
