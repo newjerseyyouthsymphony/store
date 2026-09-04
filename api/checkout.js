@@ -14,6 +14,15 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid line items' });
     }
 
+    const hasInvalidLineItem = lineItems.some((item) => {
+      const priceId = typeof item?.price === 'string' ? item.price.trim() : '';
+      const quantity = Number.isInteger(item?.quantity) ? item.quantity : Number.parseInt(item?.quantity, 10);
+      return !priceId || !Number.isInteger(quantity) || quantity < 1;
+    });
+    if (hasInvalidLineItem) {
+      return res.status(400).json({ error: 'Invalid line items' });
+    }
+
     const stripePriceCache = new Map();
     const getStripePrice = async (priceId) => {
       if (!stripePriceCache.has(priceId)) {
@@ -25,10 +34,6 @@ module.exports = async function handler(req, res) {
     const stripeLineItems = await Promise.all(lineItems.map(async (item) => {
       const priceId = typeof item?.price === 'string' ? item.price.trim() : '';
       const quantity = Number.isInteger(item?.quantity) ? item.quantity : Number.parseInt(item?.quantity, 10);
-
-      if (!priceId || !Number.isInteger(quantity) || quantity < 1) {
-        throw new Error('Invalid line item payload');
-      }
 
       const stripePrice = await getStripePrice(priceId);
       if (
