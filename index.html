@@ -28,7 +28,10 @@
         .btn-add { background-color: #0a2540; color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 12px; }
         .btn-add:hover { background-color: #635bff; }
         .btn-checkout { background-color: #635bff; color: white; border: none; width: 100%; padding: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; }
+        .btn-checkout:hover:not(:disabled) { background-color: #0a2540; }
         .btn-checkout:disabled { background-color: #ccc; cursor: not-allowed; }
+        .validation-hint { font-size: 12px; color: #999; margin-top: 8px; font-style: italic; }
+        .info-message { background: #e8f4f8; border-left: 4px solid #0a2540; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -46,12 +49,26 @@
     </script>
 
     <h1>NJYS Web Store</h1>
+    
+    <div class="info-message">
+        Welcome! Please verify your information below, select items, and proceed to checkout.
+    </div>
+
     <div class="student-panel" style="margin-bottom: 20px;">
         <h2>Verify Your Info</h2>
         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 200px;"><label>Student Full Name:</label><input type="text" id="studentInput" placeholder="e.g. Jane Doe" required oninput="validateForm()"></div>
-            <div style="flex: 1; min-width: 200px;"><label>Ensemble Name:</label><input type="text" id="ensembleInput" placeholder="e.g. Youth Symphony" required oninput="validateForm()"></div>
-            <div style="flex: 1; min-width: 200px;"><label>Parent Email:</label><input type="email" id="emailInput" placeholder="e.g. parent@email.com" required oninput="validateForm()"></div>
+            <div style="flex: 1; min-width: 200px;">
+                <label>Student Full Name:</label>
+                <input type="text" id="studentInput" placeholder="e.g. Jane Doe" oninput="validateForm()">
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <label>Ensemble Name:</label>
+                <input type="text" id="ensembleInput" placeholder="e.g. Youth Symphony" oninput="validateForm()">
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <label>Parent Email:</label>
+                <input type="email" id="emailInput" placeholder="e.g. parent@email.com" oninput="validateForm()">
+            </div>
         </div>
     </div>
 
@@ -63,7 +80,12 @@
                 <div class="product-card">
                     <div>
                         <div class="product-title">NJYS T-Shirt</div>
-                        <label>Color:</label><select id="color-item1"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
+                        <label>Color:</label>
+                        <select id="color-item1">
+                            <option value="Black">Black</option>
+                            <option value="Grey">Grey</option>
+                            <option value="Navy">Navy</option>
+                        </select>
                         <label>Size:</label>
                         <select id="size-item1">
                             <!-- IMPORTANT: replace price_PASTE_ID_HERE with your Stripe Price IDs (price_...) -->
@@ -77,17 +99,22 @@
                             <option value="price_PASTE_ID_HERE,Youth Large,14.00">Youth Large - $14.00</option>
                             <option value="price_PASTE_ID_HERE,Youth X-Large,14.00">Youth X-Large - $14.00</option>
                         </select>
-                        <label>Qty:</label><input type="number" id="qty-item1" value="1" min="1">
+                        <label>Qty:</label>
+                        <input type="number" id="qty-item1" value="1" min="1">
                     </div>
                     <button class="btn-add" onclick="addItem('NJYS T-Shirt','item1')">Add to Cart</button>
                 </div>
 
-                <!-- (other items trimmed for brevity; follow same pattern) -->
-                <!-- Item 2 -->
+                <!-- Item 2: Zippered Hoodie -->
                 <div class="product-card">
                     <div>
                         <div class="product-title">NJYS Zippered Hoodie</div>
-                        <label>Color:</label><select id="color-item2"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
+                        <label>Color:</label>
+                        <select id="color-item2">
+                            <option value="Black">Black</option>
+                            <option value="Grey">Grey</option>
+                            <option value="Navy">Navy</option>
+                        </select>
                         <label>Size:</label>
                         <select id="size-item2">
                             <option value="price_PASTE_ID_HERE,Small,35.00">Small - $35.00</option>
@@ -95,30 +122,26 @@
                             <option value="price_PASTE_ID_HERE,Large,35.00">Large - $35.00</option>
                             <option value="price_PASTE_ID_HERE,X-Large,35.00">X-Large - $35.00</option>
                         </select>
-                        <label>Qty:</label><input type="number" id="qty-item2" value="1" min="1">
+                        <label>Qty:</label>
+                        <input type="number" id="qty-item2" value="1" min="1">
                     </div>
                     <button class="btn-add" onclick="addItem('NJYS Zippered Hoodie','item2')">Add to Cart</button>
                 </div>
-
-                <!-- Add remaining items similarly... -->
             </div>
         </div>
+
         <div>
             <h2>Your Shopping Cart</h2>
             <div class="cart-panel">
                 <div id="cartItems">Your cart is empty.</div>
                 <div class="total-box">Total: $<span id="cartTotal">0.00</span></div>
                 <button class="btn-checkout" id="checkoutBtn" disabled onclick="handleCheckout()">Proceed to Payment</button>
+                <div class="validation-hint" id="validationHint"></div>
             </div>
         </div>
     </div>
 
 <script>
-    // Optionally provide images (replace placeholders)
-    const imagesMap = {
-        item1: { Black: "https://i.imgur.com/your_image1.png", Grey: "https://i.imgur.com/your_image2.png", Navy: "https://i.imgur.com/your_image3.png" }
-    };
-
     function addItem(itemName, elementId) {
         const variationSelect = document.getElementById(`size-${elementId}`);
         const colorSelect = document.getElementById(`color-${elementId}`);
@@ -158,21 +181,40 @@
             total += itemTotal;
             const itemHtml = document.createElement('div');
             itemHtml.className = 'cart-item';
-            itemHtml.innerHTML = `<div><strong>${item.name}</strong> (${item.size} - ${item.color}) x${item.qty}</div>
-                                  <div>$${itemTotal.toFixed(2)} <button class="remove-btn" onclick="removeItem(${idx})">Remove</button></div>`;
+            itemHtml.innerHTML = `<div><strong>${item.name}</strong><br/><small>${item.size} - ${item.color} x${item.qty}</small></div>
+                                  <div>$${itemTotal.toFixed(2)}<br/><button class="remove-btn" onclick="removeItem(${idx})">Remove</button></div>`;
             container.appendChild(itemHtml);
         });
         document.getElementById('cartTotal').textContent = total.toFixed(2);
         validateForm();
     }
 
-    function removeItem(idx) { cart.splice(idx, 1); renderCart(); }
+    function removeItem(idx) { 
+        cart.splice(idx, 1); 
+        renderCart(); 
+    }
 
     function validateForm() {
         const studentName = (document.getElementById('studentInput')?.value || '').trim();
         const ensembleName = (document.getElementById('ensembleInput')?.value || '').trim();
         const emailAddress = (document.getElementById('emailInput')?.value || '').trim();
-        document.getElementById('checkoutBtn').disabled = !(studentName && ensembleName && emailAddress && cart.length > 0);
+        const cartHasItems = cart.length > 0;
+        
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const hintElement = document.getElementById('validationHint');
+        
+        if (studentName && ensembleName && emailAddress && cartHasItems) {
+            checkoutBtn.disabled = false;
+            hintElement.textContent = '';
+        } else {
+            checkoutBtn.disabled = true;
+            const missing = [];
+            if (!studentName) missing.push('student name');
+            if (!ensembleName) missing.push('ensemble name');
+            if (!emailAddress) missing.push('email');
+            if (!cartHasItems) missing.push('items in cart');
+            hintElement.textContent = `Missing: ${missing.join(', ')}`;
+        }
     }
 
     async function handleCheckout() {
@@ -180,15 +222,13 @@
             alert('Stripe has not been initialized. Please reload the page.');
             return;
         }
+        
         const studentName = document.getElementById('studentInput').value.trim();
         const ensembleName = document.getElementById('ensembleInput').value.trim();
         const emailAddress = document.getElementById('emailInput').value.trim();
         const cartDescription = cart.map(c => `${c.name} (${c.size}-${c.color}) x${c.qty}`).join(' | ');
 
-        // It's recommended to create a Checkout Session server-side with the secret key and pass a sessionId to the client.
-        // Client-side lineItems approach is supported but metadata and security are better handled on server.
         const lineItems = cart.map(item => ({ price: item.id, quantity: item.qty }));
-
         const metadataString = `${studentName} | ${ensembleName} | ${emailAddress} | ${cartDescription}`;
 
         // Using client-side redirectToCheckout with lineItems:
