@@ -39,15 +39,35 @@
         // Global variables initialized at the top
         let cart = [];
 
-        // IMPORTANT:
-        // Replace 'pk_test_REPLACE_ME' with your publishable key in Vercel env vars (STRIPE_PUBLISHABLE_KEY) and set it in Vercel. This placeholder remains for local dev only.
-        const STRIPE_PUBLISHABLE_KEY = 'pk_test_REPLACE_ME';
-        // stripe will be initialized after stripe.js loads below
+        // stripe will be initialized after stripe.js loads below via /api/config
         let stripe = null;
 
         // Utility: simple email regex for light validation (not perfect but helpful)
         function isProbablyEmail(email) {
             return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+        }
+
+        // Initialize Stripe client by fetching non-secret config from the server
+        async function initStripe() {
+            try {
+                const resp = await fetch('/api/config');
+                if (!resp.ok) {
+                    console.error('Failed to fetch client config:', resp.statusText);
+                    return;
+                }
+                const cfg = await resp.json();
+                if (!cfg.publishableKey) {
+                    console.error('No publishableKey returned by /api/config');
+                    return;
+                }
+                if (typeof Stripe === 'function') {
+                    stripe = Stripe(cfg.publishableKey);
+                } else {
+                    console.error('Stripe.js did not load. Check the script src.');
+                }
+            } catch (err) {
+                console.error('Failed to initialize Stripe client:', err);
+            }
         }
     </script>
 
@@ -272,7 +292,7 @@
 
         // Build payload with only necessary fields (price ids and qtys)
         const payload = {
-            cart: cart.map(item => ({ id: item.id, qty: item.qty })),
+            cart: cart.map(item => ({ id: item.id, qty: item.qty, size: item.size, color: item.color })),
             studentName,
             ensembleName,
             email: emailAddress
@@ -297,11 +317,7 @@
 
     // Initialize stripe AFTER the stripe.js script has loaded
     document.addEventListener('DOMContentLoaded', function () {
-        if (typeof Stripe === 'function') {
-            stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-        } else {
-            console.error('Stripe.js did not load. Check the script src.');
-        }
+        initStripe();
     });
 </script>
 </body>
