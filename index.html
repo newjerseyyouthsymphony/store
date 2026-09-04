@@ -17,7 +17,7 @@
         @media(min-width: 640px) { .products-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media(min-width: 1100px) { .products-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         .product-card { border: none; padding: 16px; border-radius: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
-        .product-image { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; background: #f4f7fb; object-fit: cover; border: 1px solid #e5ecf5; }
+        .product-image { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; background: #f4f7fb; object-fit: contain; object-position: center; border: 1px solid #e5ecf5; }
         .product-title { font-size: 18px; font-weight: bold; margin: 0 0 8px 0; min-height: 38px; color: #1f63af; }
         label { display: block; font-size: 12px; font-weight: bold; margin-top: 8px; margin-bottom: 5px; color: #333; }
         select, input { padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box; width: 100%; background-color: #f9f9f9; color: #333; }
@@ -49,45 +49,19 @@
         let stripe = null;
 
         const productImages = {
-            item1: {
-                Black: 'https://i.imgur.com/y3vDkf6.png',
-                Grey: 'https://i.imgur.com/E4iS8Po.png',
-                Navy: 'https://i.imgur.com/Cn1ZnRM.png'
-            },
-            item2: {
-                Black: 'https://i.imgur.com/AViHWYP.png',
-                Grey: 'https://i.imgur.com/vBDbFvg.png',
-                Navy: 'https://i.imgur.com/GU7CFAc.png'
-            },
-            item3: {
-                Black: 'https://i.imgur.com/yktaUpI.png',
-                Grey: 'https://i.imgur.com/8ObsBld.png',
-                Navy: 'https://i.imgur.com/znjYaKL.png'
-            },
-            item4: {
-                Black: 'https://i.imgur.com/3wCAthF.png',
-                Grey: 'https://i.imgur.com/IL6qQfu.png',
-                Navy: 'https://i.imgur.com/TjGO51U.png'
-            },
-            item5: {
-                Black: 'https://i.imgur.com/FMXKCCM.png',
-                Grey: 'https://i.imgur.com/HZ6XwDA.png',
-                Navy: 'https://i.imgur.com/A1jkTxT.png',
-                Natural: 'https://i.imgur.com/QsU2pXv.png'
-            },
-            item6: {
-                Black: 'https://i.imgur.com/PQ0YPm7.png',
-                Natural: 'https://i.imgur.com/Q33GnwD.png'
-            }
+            item1: { Black: 'https://i.imgur.com/y3vDkf6.png', Grey: 'https://i.imgur.com/E4iS8Po.png', Navy: 'https://i.imgur.com/Cn1ZnRM.png' },
+            item2: { Black: 'https://i.imgur.com/AViHWYP.png', Grey: 'https://i.imgur.com/vBDbFvg.png', Navy: 'https://i.imgur.com/GU7CFAc.png' },
+            item3: { Black: 'https://i.imgur.com/yktaUpI.png', Grey: 'https://i.imgur.com/8ObsBld.png', Navy: 'https://i.imgur.com/znjYaKL.png' },
+            item4: { Black: 'https://i.imgur.com/3wCAthF.png', Grey: 'https://i.imgur.com/IL6qQfu.png', Navy: 'https://i.imgur.com/TjGO51U.png' },
+            item5: { Black: 'https://i.imgur.com/FMXKCCM.png', Grey: 'https://i.imgur.com/HZ6XwDA.png', Navy: 'https://i.imgur.com/A1jkTxT.png', Natural: 'https://i.imgur.com/QsU2pXv.png' },
+            item6: { Black: 'https://i.imgur.com/PQ0YPm7.png', Natural: 'https://i.imgur.com/Q33GnwD.png' }
         };
 
         function updateProductImage(elementId) {
             const colorSelect = document.getElementById(`color-${elementId}`);
             const imageElement = document.getElementById(`image-${elementId}`);
             if (!colorSelect || !imageElement) return;
-
-            const colorValue = colorSelect.value;
-            const imageUrl = productImages[elementId]?.[colorValue];
+            const imageUrl = productImages[elementId]?.[colorSelect.value];
             if (imageUrl) imageElement.src = imageUrl;
         }
     </script>
@@ -116,17 +90,12 @@
         <div>
             <h2>Available Items</h2>
             <div class="products-list">
-                <!-- Item 1: T-Shirt (TEST MODE) -->
                 <div class="product-card">
                     <div>
                         <img class="product-image" id="image-item1" src="https://i.imgur.com/y3vDkf6.png" alt="T-Shirt product image">
                         <div class="product-title">T-Shirt (TEST)</div>
                         <label>Color:</label>
-                        <select id="color-item1" onchange="updateProductImage('item1')">
-                            <option value="Black">Black</option>
-                            <option value="Grey">Grey</option>
-                            <option value="Navy">Navy</option>
-                        </select>
+                        <select id="color-item1" onchange="updateProductImage('item1')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
                         <label>Size:</label>
                         <select id="size-item1">
                             <option value="price_1UByQ1Li0nDifNVEyfIPA28z,Small,16.00">Small - $16.00 (TEST)</option>
@@ -144,18 +113,12 @@
                     </div>
                     <button class="btn-add" onclick="addItem('T-Shirt','item1')">Add to Cart</button>
                 </div>
-
-                <!-- Item 2: Zippered Hoodie -->
                 <div class="product-card">
                     <div>
                         <img class="product-image" id="image-item2" src="https://i.imgur.com/AViHWYP.png" alt="Zippered Hoodie product image">
                         <div class="product-title">Zippered Hoodie</div>
                         <label>Color:</label>
-                        <select id="color-item2" onchange="updateProductImage('item2')">
-                            <option value="Black">Black</option>
-                            <option value="Grey">Grey</option>
-                            <option value="Navy">Navy</option>
-                        </select>
+                        <select id="color-item2" onchange="updateProductImage('item2')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
                         <label>Size:</label>
                         <select id="size-item2">
                             <option value="price_1UBpG1Li0nDifNVEA7bz4kRw,Small,35.00">Small - $35.00</option>
@@ -173,18 +136,12 @@
                     </div>
                     <button class="btn-add" onclick="addItem('Zippered Hoodie','item2')">Add to Cart</button>
                 </div>
-               
-                <!-- Item 3: Hoodie (TEST MODE) -->
                 <div class="product-card">
                     <div>
                         <img class="product-image" id="image-item3" src="https://i.imgur.com/yktaUpI.png" alt="Hoodie product image">
                         <div class="product-title">Hoodie (TEST)</div>
                         <label>Color:</label>
-                        <select id="color-item3" onchange="updateProductImage('item3')">
-                            <option value="Black">Black</option>
-                            <option value="Grey">Grey</option>
-                            <option value="Navy">Navy</option>
-                        </select>
+                        <select id="color-item3" onchange="updateProductImage('item3')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
                         <label>Size:</label>
                         <select id="size-item3">
                             <option value="price_1UByQzLi0nDifNVEeQQT9Bhl,Small,38.00">Small - $38.00 (TEST)</option>
@@ -202,18 +159,12 @@
                     </div>
                     <button class="btn-add" onclick="addItem('Hoodie','item3')">Add to Cart</button>
                 </div>
-
-                <!-- Item 4: Sweatpants -->
                 <div class="product-card">
                     <div>
                         <img class="product-image" id="image-item4" src="https://i.imgur.com/3wCAthF.png" alt="Sweatpants product image">
                         <div class="product-title">Sweatpants</div>
                         <label>Color:</label>
-                        <select id="color-item4" onchange="updateProductImage('item4')">
-                            <option value="Black">Black</option>
-                            <option value="Grey">Grey</option>
-                            <option value="Navy">Navy</option>
-                        </select>
+                        <select id="color-item4" onchange="updateProductImage('item4')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select>
                         <label>Size:</label>
                         <select id="size-item4">
                             <option value="price_1UBpLsLi0nDifNVEs3I0adLV,Small,32.00">Small - $32.00</option>
@@ -231,19 +182,12 @@
                     </div>
                     <button class="btn-add" onclick="addItem('Sweatpants','item4')">Add to Cart</button>
                 </div>
-
-                <!-- Item 5: Tote Bag (One Size) -->
                 <div class="product-card">
                     <div>
                         <img class="product-image" id="image-item5" src="https://i.imgur.com/FMXKCCM.png" alt="Tote Bag product image">
                         <div class="product-title">Tote Bag</div>
                         <label>Color:</label>
-                        <select id="color-item5" onchange="updateProductImage('item5')">
-                            <option value="Black">Black</option>
-                            <option value="Grey">Grey</option>
-                            <option value="Navy">Navy</option>
-                            <option value="Natural">Natural</option>
-                        </select>
+                        <select id="color-item5" onchange="updateProductImage('item5')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option><option value="Natural">Natural</option></select>
                         <label>Price:</label>
                         <div style="padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9; color: #1f63af; font-weight: bold;">One Size - $17.00</div>
                         <input type="hidden" id="size-item5" value="price_1UBwKlLi0nDifNVENSMsAvu6,One Size,17.00">
@@ -252,17 +196,12 @@
                     </div>
                     <button class="btn-add" onclick="addItem('Tote Bag','item5')">Add to Cart</button>
                 </div>
-
-                <!-- Item 6: Jumbo Tote Bag (One Size) -->
                 <div class="product-card">
                     <div>
                         <img class="product-image" id="image-item6" src="https://i.imgur.com/PQ0YPm7.png" alt="Jumbo Tote Bag product image">
                         <div class="product-title">Jumbo Tote Bag</div>
                         <label>Color:</label>
-                        <select id="color-item6" onchange="updateProductImage('item6')">
-                            <option value="Black">Black</option>
-                            <option value="Natural">Natural</option>
-                        </select>
+                        <select id="color-item6" onchange="updateProductImage('item6')"><option value="Black">Black</option><option value="Natural">Natural</option></select>
                         <label>Price:</label>
                         <div style="padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9; color: #1f63af; font-weight: bold;">One Size - $19.00</div>
                         <input type="hidden" id="size-item6" value="price_1UBwM6Li0nDifNVEhYZp2lQb,One Size,19.00">
@@ -273,7 +212,6 @@
                 </div>
             </div>
         </div>
-
         <div>
             <h2>Your Shopping Cart</h2>
             <div class="cart-panel">
@@ -325,28 +263,22 @@
             total += itemTotal;
             const itemHtml = document.createElement('div');
             itemHtml.className = 'cart-item';
-            itemHtml.innerHTML = `<div><strong>${item.name}</strong><br/><small>${item.size} - ${item.color} x${item.qty}</small></div>
-                                  <div>$${itemTotal.toFixed(2)}<br/><button class="remove-btn" onclick="removeItem(${idx})">Remove</button></div>`;
+            itemHtml.innerHTML = `<div><strong>${item.name}</strong><br/><small>${item.size} - ${item.color} x${item.qty}</small></div><div>$${itemTotal.toFixed(2)}<br/><button class="remove-btn" onclick="removeItem(${idx})">Remove</button></div>`;
             container.appendChild(itemHtml);
         });
         document.getElementById('cartTotal').textContent = total.toFixed(2);
         validateForm();
     }
 
-    function removeItem(idx) { 
-        cart.splice(idx, 1); 
-        renderCart(); 
-    }
+    function removeItem(idx) { cart.splice(idx, 1); renderCart(); }
 
     function validateForm() {
         const studentName = (document.getElementById('studentInput')?.value || '').trim();
         const ensembleName = (document.getElementById('ensembleInput')?.value || '').trim();
         const emailAddress = (document.getElementById('emailInput')?.value || '').trim();
         const cartHasItems = cart.length > 0;
-        
         const checkoutBtn = document.getElementById('checkoutBtn');
         const hintElement = document.getElementById('validationHint');
-        
         if (studentName && ensembleName && emailAddress && cartHasItems) {
             checkoutBtn.disabled = false;
             hintElement.textContent = '';
@@ -365,62 +297,35 @@
         const checkoutBtn = document.getElementById('checkoutBtn');
         checkoutBtn.disabled = true;
         checkoutBtn.textContent = 'Processing...';
-        
         try {
             const studentName = document.getElementById('studentInput').value.trim();
             const ensembleName = document.getElementById('ensembleInput').value.trim();
             const emailAddress = document.getElementById('emailInput').value.trim();
             const cartDescription = cart.map(c => `${c.name} (${c.size}-${c.color}) x${c.qty}`).join(' | ');
             const totalAmount = parseFloat(document.getElementById('cartTotal').textContent);
-
             const lineItems = cart.map(item => ({ price: item.id, quantity: item.qty }));
             const metadataString = `${studentName} | ${ensembleName} | ${emailAddress} | ${cartDescription}`;
-
-            // Call the Vercel serverless function to create a checkout session
             const response = await fetch('/api/checkout', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    lineItems: lineItems,
-                    customerEmail: emailAddress,
-                    clientReferenceId: metadataString,
-                    successUrl: window.location.origin + '/thank-you.html?orderId=' + Date.now(),
-                    cancelUrl: window.location.href,
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lineItems, customerEmail: emailAddress, clientReferenceId: metadataString, successUrl: window.location.origin + '/thank-you.html?orderId=' + Date.now(), cancelUrl: window.location.href })
             });
-
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.error || 'Failed to create checkout session');
             }
-
             const { url, sessionId } = await response.json();
-            
-            // Save order to Airtable after successful Stripe session creation
             try {
                 const orderId = 'ORD-' + Date.now();
                 const customerInfo = `${studentName} (${ensembleName})`;
-                
                 await fetch('/api/save-order', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        orderId: orderId,
-                        customerInfo: customerInfo,
-                        amountPaid: totalAmount,
-                        buyerEmail: emailAddress,
-                        stripeReference: sessionId,
-                        orderContents: cartDescription,
-                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId, customerInfo, amountPaid: totalAmount, buyerEmail: emailAddress, stripeReference: sessionId, orderContents: cartDescription })
                 });
             } catch (airtableError) {
                 console.warn('Warning: Order saved to Stripe but Airtable sync failed:', airtableError);
             }
-            
             window.location.href = url;
         } catch (error) {
             console.error('Checkout error:', error);
@@ -430,14 +335,12 @@
         }
     }
 
-    // Initialize stripe AFTER the stripe.js script has loaded
     document.addEventListener('DOMContentLoaded', function () {
         if (typeof Stripe === 'function') {
             stripe = Stripe('pk_live_51GbHGJLi0nDifNVEPo7WLcwjHCriorbmgpx2NN6tVuHcnOqNU1Psn4YJY4G1Mrex2UbNOEyP3m825Pzc9FMt25w300mNGxYaju');
         } else {
             console.error('Stripe.js did not load. Check the script src.');
         }
-
         ['item1', 'item2', 'item3', 'item4', 'item5', 'item6'].forEach(updateProductImage);
     });
 </script>
