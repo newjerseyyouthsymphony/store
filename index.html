@@ -318,6 +318,7 @@
             const ensembleName = document.getElementById('ensembleInput').value.trim();
             const emailAddress = document.getElementById('emailInput').value.trim();
             const cartDescription = cart.map(c => `${c.name} (${c.size}-${c.color}) x${c.qty}`).join(' | ');
+            const totalAmount = parseFloat(document.getElementById('cartTotal').textContent);
 
             const lineItems = cart.map(item => ({ price: item.id, quantity: item.qty }));
             const metadataString = `${studentName} | ${ensembleName} | ${emailAddress} | ${cartDescription}`;
@@ -332,7 +333,7 @@
                     lineItems: lineItems,
                     customerEmail: emailAddress,
                     clientReferenceId: metadataString,
-                    successUrl: window.location.origin + '/thank-you.html',
+                    successUrl: window.location.origin + '/thank-you.html?orderId=' + Date.now(),
                     cancelUrl: window.location.href,
                 }),
             });
@@ -342,7 +343,30 @@
                 throw new Error(error.error || 'Failed to create checkout session');
             }
 
-            const { url } = await response.json();
+            const { url, sessionId } = await response.json();
+            
+            // Save order to Airtable after successful Stripe session creation
+            try {
+                const orderId = 'ORD-' + Date.now();
+                const customerInfo = `${studentName} (${ensembleName})`;
+                
+                await fetch('/api/save-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        customerInfo: customerInfo,
+                        amountPaid: totalAmount,
+                        buyerEmail: emailAddress,
+                        stripeReference: sessionId,
+                    }),
+                });
+            } catch (airtableError) {
+                console.warn('Warning: Order saved to Stripe but Airtable sync failed:', airtableError);
+            }
+            
             window.location.href = url;
         } catch (error) {
             console.error('Checkout error:', error);
