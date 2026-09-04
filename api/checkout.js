@@ -35,11 +35,20 @@ module.exports = async function handler(req, res) {
       const priceId = typeof item?.price === 'string' ? item.price.trim() : '';
       const quantity = Number.isInteger(item?.quantity) ? item.quantity : Number.parseInt(item?.quantity, 10);
 
-      const stripePrice = await getStripePrice(priceId);
+      let stripePrice;
+      try {
+        stripePrice = await getStripePrice(priceId);
+      } catch (retrieveError) {
+        return { price: priceId, quantity };
+      }
+      const productTaxCode = stripePrice.product && typeof stripePrice.product !== 'string'
+        ? stripePrice.product.tax_code
+        : null;
       if (
         stripePrice.billing_scheme !== 'per_unit'
         || !Number.isInteger(stripePrice.unit_amount)
         || stripePrice.tax_behavior !== 'exclusive'
+        || productTaxCode
       ) {
         return { price: priceId, quantity };
       }
