@@ -2,6 +2,13 @@ const Stripe = require('stripe');
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+function buildDisplayName(item) {
+  const baseName = item.name && item.name.startsWith('NJYS ') ? item.name : `NJYS ${item.name}`;
+  const variationParts = [item.color, item.size].filter(Boolean);
+
+  return variationParts.length > 0 ? `${baseName} — ${variationParts.join(' / ')}` : baseName;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -14,9 +21,20 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid line items' });
     }
 
+    const stripeLineItems = lineItems.map((item) => ({
+      price_data: {
+        currency: 'usd',
+        unit_amount: item.unitAmount,
+        product_data: {
+          name: buildDisplayName(item),
+        },
+      },
+      quantity: item.quantity,
+    }));
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      line_items: lineItems,
+      line_items: stripeLineItems,
       customer_email: customerEmail,
       client_reference_id: clientReferenceId,
       success_url: successUrl,
