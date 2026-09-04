@@ -1,6 +1,6 @@
-import fetch from 'node-fetch';
+const fetch = require('node-fetch');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     const data = await response.json();
     return res.status(200).json({ success: true, airtableId: data.records[0].id });
   } catch (error) {
-    console.error('Error saving to Airtable:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('Error saving to Airtable:', error.message);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
   }
-}
+};
