@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thank You - NJYS Store</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #635bff 0%, #0a2540 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #635bff;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .checkmark {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin: 15px 0;
+            color: #555;
+        }
+        .info-box {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 4px solid #635bff;
+            text-align: left;
+        }
+        .info-box p {
+            margin: 8px 0;
+        }
+        .label {
+            font-weight: bold;
+            color: #0a2540;
+        }
+        .button-group {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        a, button {
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 6px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #635bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0a2540;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 91, 255, 0.3);
+        }
+        .btn-secondary {
+            background-color: #f0f4ff;
+            color: #635bff;
+            border: 2px solid #635bff;
+        }
+        .btn-secondary:hover {
+            background-color: #635bff;
+            color: white;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="checkmark">✓</div>
+        <h1>Thank You!</h1>
+        <p>Your order has been successfully placed.</p>
+        
+        <div class="info-box">
+            <p><span class="label">Order Status:</span> Processing</p>
+            <p>You will receive a confirmation email shortly with your order details and tracking information.</p>
+            <p><span class="label">What's Next?</span> Your NJYS merchandise will be prepared and shipped to you within 7-10 business days.</p>
+        </div>
+
+        <p>We appreciate your support of the New Jersey Youth Symphony!</p>
+
+        <div class="button-group">
+            <a href="/" class="btn-primary">Return to Store</a>
+            <a href="https://www.njys.org" class="btn-secondary" target="_blank">Visit NJYS Website</a>
+        </div>
+
+        <div class="footer">
+            <p>If you have any questions about your order, please contact us at info@njys.org</p>
+        </div>
+    </div>
+</body>
+</html>
