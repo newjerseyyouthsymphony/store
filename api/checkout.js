@@ -21,15 +21,34 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid line items' });
     }
 
-    const stripeLineItems = lineItems.map((item) => ({
-      price_data: {
-        currency: 'usd',
-        unit_amount: item.unitAmount,
-        product_data: {
-          name: buildDisplayName(item),
+    const stripeLineItems = await Promise.all(lineItems.map(async (item) => {
+      if (!item || !item.id || !item.quantity) {
+        throw new Error('Invalid line item');
+      }
+
+      const price = await stripe.prices.retrieve(item.id, {
+        expand: ['product'],
+      });
+      const productName = typeof price.product === 'object' ? price.product.name : item.name;
+
+      if (!productName || price.unit_amount == null) {
+        throw new Error('Invalid line item');
+      }
+
+      return {
+        price_data: {
+          currency: price.currency || 'usd',
+          unit_amount: price.unit_amount,
+          product_data: {
+            name: buildDisplayName({
+              name: productName,
+              color: item.color,
+              size: item.size,
+            }),
+          },
         },
-      },
-      quantity: item.quantity,
+        quantity: item.quantity,
+      };
     }));
 
     const session = await stripe.checkout.sessions.create({
