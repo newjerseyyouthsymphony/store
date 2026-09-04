@@ -1,3 +1,4 @@
+<!-- Updated index.html to call /api/create-checkout-session on checkout -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,10 +41,8 @@
         let cart = [];
 
         // IMPORTANT:
-        // Replace 'pk_test_REPLACE_ME' with your publishable key.
-        // NOTE: Publishable keys are safe to use in the browser but don't commit secrets (server secret key) to the repo.
-        // Recommended: create Checkout Sessions on the server (with your secret key) and return the sessionId for client redirect.
-        const STRIPE_PUBLISHABLE_KEY = 'pk_live_51GbHGJLi0nDifNVEPo7WLcwjHCriorbmgpx2NN6tVuHcnOqNU1Psn4YJY4G1Mrex2UbNOEyP3m825Pzc9FMt25w300mNGxYaju';
+        // Replace 'pk_test_REPLACE_ME' with your publishable key in Vercel env vars (STRIPE_PUBLISHABLE_KEY) and set it in Vercel. This placeholder remains for local dev only.
+        const STRIPE_PUBLISHABLE_KEY = 'pk_test_REPLACE_ME';
         // stripe will be initialized after stripe.js loads below
         let stripe = null;
     </script>
@@ -228,20 +227,30 @@
         const emailAddress = document.getElementById('emailInput').value.trim();
         const cartDescription = cart.map(c => `${c.name} (${c.size}-${c.color}) x${c.qty}`).join(' | ');
 
-        const lineItems = cart.map(item => ({ price: item.id, quantity: item.qty }));
-        const metadataString = `${studentName} | ${ensembleName} | ${emailAddress} | ${cartDescription}`;
+        const payload = {
+            cart: cart.map(item => ({ id: item.id, qty: item.qty })),
+            studentName,
+            ensembleName,
+            email: emailAddress
+        };
 
-        // Using client-side redirectToCheckout with lineItems:
-        stripe.redirectToCheckout({
-            lineItems: lineItems,
-            mode: 'payment',
-            customerEmail: emailAddress,
-            clientReferenceId: metadataString,
-            successUrl: window.location.origin + '/thank-you.html',
-            cancelUrl: window.location.href
-        }).then(result => {
-            if (result.error) alert(result.error.message);
-        });
+        try {
+            const resp = await fetch('/api/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Failed to create checkout session');
+
+            // Redirect to Checkout using the session id returned from the server
+            stripe.redirectToCheckout({ sessionId: data.id }).then(result => {
+                if (result.error) alert(result.error.message);
+            });
+        } catch (err) {
+            console.error('Checkout error', err);
+            alert('Error creating checkout session: ' + (err.message || err));
+        }
     }
 
     // Initialize stripe AFTER the stripe.js script has loaded
