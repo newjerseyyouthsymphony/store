@@ -1,1 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NJYS Storefront - Temporarily Closed</title>
 
+    <style>
+        :root {
+            --njys-blue: #1f63af;
+            --njys-blue-2: #4a9ee6;
+            --njys-blue-3: #6db3f2;
+            --njys-navy: #123e73;
+            --panel: rgba(255, 255, 255, 0.96);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+            color: #333;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top, rgba(255,255,255,0.18), transparent 30%),
+                linear-gradient(180deg, var(--njys-blue) 0%, var(--njys-navy) 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+            background-size: 36px 36px;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0));
+            opacity: 0.18;
+        }
+        .maintenance-container {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.06));
+            border: 1px solid rgba(255,255,255,0.18);
+            color: #fff;
+            border-radius: 18px;
+            padding: 60px 40px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.16);
+            backdrop-filter: blur(8px);
+            text-align: center;
+            max-width: 600px;
+            z-index: 10;
+            position: relative;
+        }
+        .icon {
+            font-size: 72px;
+            margin-bottom: 24px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        h1 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            margin: 0 0 16px 0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.18);
+            letter-spacing: 0.2px;
+            border-bottom: 2px solid rgba(255,255,255,0.55);
+            padding-bottom: 16px;
+        }
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin: 12px 0;
+            color: rgba(255,255,255,0.95);
+        }
+        .small-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.75);
+            margin-top: 30px;
+            font-style: italic;
+        }
+        .contact-info {
+            margin-top: 30px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+        }
+        .contact-info p {
+            font-size: 15px;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="maintenance-container">
+        <div class="icon">🔧</div>
+        <h1>Temporarily Closed</h1>
+        <p>We're making updates to the NJYS Storefront to serve you better.</p>
+        <p>We'll be back online shortly.</p>
+        <div class="contact-info">
+            <p><strong>Thank you for your patience!</strong></p>
+            <p class="small-text">Check back soon for our full selection of merchandise.</p>
+        </div>
+    </div>
+</body>
+</html>
