@@ -1,12 +1,14 @@
 {
-  "builds": [
-    { "src": "api/**/*.js", "use": "@vercel/node" },
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "thank-you.html", "use": "@vercel/static" },
-    { "src": "maintenance.html", "use": "@vercel/static" }
-  ],
+  "functions": {
+    "api/site.js": {
+      "includeFiles": "*.html"
+    }
+  },
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/maintenance.html" }
+    { "src": "/", "dest": "/api/site?path=%2F" },
+    { "src": "/index.html", "dest": "/api/site?path=%2Findex.html" },
+    { "src": "/thank-you.html", "dest": "/api/site?path=%2Fthank-you.html" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/api/site?path=/$1" }
   ]
 }
