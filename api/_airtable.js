@@ -42,6 +42,15 @@ async function listMerchandise() {
   return records;
 }
 
+// The primary field can be any label; only the Open checkbox is read here.
+// Require exactly one status record and fail closed for missing/duplicate records.
+async function isStoreOpen() {
+  const params = new URLSearchParams({ maxRecords: '2' });
+  params.append('fields[]', 'Open');
+  const result = await airtable(`Store%20Status?${params.toString()}`);
+  return result.records.length === 1 && result.records[0].fields.Open === true;
+}
+
 function isActive(fields) {
   const status = fields['Active Status'];
   return typeof status === 'string'
@@ -49,4 +58,4 @@ function isActive(fields) {
     : status === true;
 }
 
-module.exports = { airtable, listMerchandise, isActive };
+module.exports = { airtable, listMerchandise, isActive, isStoreOpen };

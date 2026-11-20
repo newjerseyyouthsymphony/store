@@ -3,10 +3,20 @@
     { "src": "api/**/*.js", "use": "@vercel/node" },
     { "src": "index.html", "use": "@vercel/static" },
     { "src": "thank-you.html", "use": "@vercel/static" },
-    { "src": "maintenance.html", "use": "@vercel/static" }
+    { "src": "maintenance.html", "use": "@vercel/static" },
+    { "src": "admin.html", "use": "@vercel/static" }
   ],
+  "functions": {
+    "api/site.js": {
+      "includeFiles": "*.html"
+    }
+  },
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/maintenance.html" }
+    { "src": "/api/admin", "dest": "/api/admin" },
+    { "src": "/api/products", "dest": "/api/products" },
+    { "src": "/api/checkout", "dest": "/api/checkout" },
+    { "src": "/admin.html", "dest": "/admin.html" },
+    { "src": "/maintenance.html", "dest": "/maintenance.html" },
+    { "src": "/(.*)", "dest": "/api/site?path=/$1" }
   ]
 }

@@ -1,4 +1,4 @@
-const { listMerchandise, isActive } = require('./_airtable');
+const { listMerchandise, isActive, isStoreOpen } = require('./_airtable');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -6,6 +6,11 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    if (!(await isStoreOpen())) {
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(503).json({ error: 'The store is temporarily closed.' });
+    }
+
     const records = await listMerchandise();
 
     const products = records

@@ -1,5 +1,5 @@
 const Stripe = require('stripe');
-const { listMerchandise, isActive } = require('./_airtable');
+const { listMerchandise, isActive, isStoreOpen } = require('./_airtable');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,6 +7,12 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    // Re-check Airtable at checkout so a stale browser session cannot place an order.
+    if (!(await isStoreOpen())) {
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(503).json({ error: 'The store is temporarily closed.' });
+    }
+
     const { lineItems, customerEmail, clientReferenceId } = req.body || {};
 
     if (!process.env.STRIPE_SECRET_KEY) {
