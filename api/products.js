@@ -12,30 +12,46 @@ module.exports = async function handler(req, res) {
     }
 
     const records = await listMerchandise();
+    const groups = new Map();
 
-    const products = records
-      .filter((record) => isActive(record.fields))
-      .map((record) => ({
-        id: record.id,
-        name: String(record.fields['Item Name'] || '').trim(),
-        size: String(record.fields.Size || '').trim(),
-        color: String(record.fields.Color || '').trim(),
-        price: Number(record.fields.Price),
-      }))
-      .filter((item) =>
-        item.name &&
-        item.size &&
-        item.color &&
-        Number.isFinite(item.price) &&
-        item.price >= 0
-      );
+    for (const record of records) {
+      if (!isActive(record.fields)) continue;
+
+      const name = String(record.fields['Item Name'] || '').trim();
+      const size = String(record.fields.Size || '').trim();
+      const color = String(record.fields.Color || '').trim();
+      const price = Number(record.fields.Price);
+
+      if (!name || !size || !color || !Number.isFinite(price) || price < 0) continue;
+
+      if (!groups.has(name)) {
+        groups.set(name, { name, price, variants: [] });
+      }
+
+      const product = groups.get(name);
+      product.price = price;
+
+      if (!product.variants.some(variant => variant.size === size && variant.color === color)) {
+        product.variants.push({ id: record.id, size, color, price });
+      }
+    }
+
+    const products = [...groups.values()].map(product => {
+      const sizes = [...new Set(product.variants.map(variant => variant.size))];
+      const colors = [...new Set(product.variants.map(variant => variant.color))];
+      return {
+        name: product.name,
+        price: product.price,
+        sizes,
+        colors,
+        variants: product.variants,
+      };
+    });
 
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ products });
   } catch (error) {
     console.error('Products error:', error.message);
-    return res.status(500).json({
-      error: 'Unable to load merchandise.',
-    });
+    return res.status(500).json({ error: 'Unable to load merchandise.' });
   }
 };

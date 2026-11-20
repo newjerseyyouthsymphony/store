@@ -15,7 +15,7 @@
     .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
     .card{background:#fff;border-radius:12px;padding:16px}
     label{display:block;font-weight:bold;font-size:13px;margin-top:8px}
-    input{width:100%;box-sizing:border-box;padding:10px;margin-top:4px}
+    input,select{width:100%;box-sizing:border-box;padding:10px;margin-top:4px}
     button{border:0;border-radius:8px;padding:11px;background:#4a9ee6;color:#fff;font-weight:bold;cursor:pointer}
     button:disabled{opacity:.55;cursor:not-allowed}
     .cart-row{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:10px 0}
@@ -67,8 +67,17 @@ async function loadProducts() {
       ? products.map((product, index) => `
           <article class="card">
             <h3>${escapeHtml(product.name)}</h3>
-            <p>${escapeHtml(product.size)} · ${escapeHtml(product.color)}</p>
-            <p><strong>$${product.price.toFixed(2)}</strong></p>
+            <label>Size
+              <select id="size-${index}" onchange="updateVariantPrice(${index})">
+                ${product.sizes.map(size => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`).join('')}
+              </select>
+            </label>
+            <label>Color
+              <select id="color-${index}" onchange="updateVariantPrice(${index})">
+                ${product.colors.map(color => `<option value="${escapeHtml(color)}">${escapeHtml(color)}</option>`).join('')}
+              </select>
+            </label>
+            <p><strong id="price-${index}">$${product.variants[0].price.toFixed(2)}</strong></p>
             <label>Quantity
               <input id="qty-${index}" type="number" min="1" max="99" value="1">
             </label>
@@ -87,18 +96,49 @@ function escapeHtml(value) {
   }[char]));
 }
 
+function selectedVariant(index) {
+  const product = products[index];
+  const size = document.getElementById(`size-${index}`).value;
+  const color = document.getElementById(`color-${index}`).value;
+  return product.variants.find(variant => variant.size === size && variant.color === color);
+}
+
+function updateVariantPrice(index) {
+  const variant = selectedVariant(index);
+  const priceElement = document.getElementById(`price-${index}`);
+  if (variant) {
+    priceElement.textContent = `$${variant.price.toFixed(2)}`;
+  } else {
+    priceElement.textContent = 'Unavailable';
+  }
+}
+
 function addToCart(index) {
   const product = products[index];
+  const variant = selectedVariant(index);
+  if (!variant) {
+    document.getElementById('message').textContent = 'That size and color combination is unavailable.';
+    return;
+  }
+
   const quantityInput = document.getElementById(`qty-${index}`);
   const quantity = Math.max(1, Math.min(99, Number(quantityInput.value) || 1));
-  const existing = cart.find(item => item.id === product.id);
+  const existing = cart.find(item => item.id === variant.id);
 
   if (existing) {
     existing.quantity = Math.min(99, existing.quantity + quantity);
   } else {
-    cart.push({ ...product, quantity });
+    cart.push({
+      id: variant.id,
+      name: product.name,
+      size: variant.size,
+      color: variant.color,
+      price: variant.price,
+      quantity
+    });
   }
 
+  document.getElementById('message').textContent = '';
   renderCart();
 }
 
@@ -137,8 +177,7 @@ function validateCheckout() {
   const student = document.getElementById('student').value.trim();
   const ensemble = document.getElementById('ensemble').value.trim();
   const email = document.getElementById('email').value.trim();
-  document.getElementById('checkout').disabled =
-    !(cart.length && student && ensemble && email);
+  document.getElementById('checkout').disabled = !(cart.length && student && ensemble && email);
 }
 
 ['student', 'ensemble', 'email'].forEach(id => {
@@ -161,10 +200,7 @@ document.getElementById('checkout').addEventListener('click', async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        lineItems: cart.map(item => ({
-          id: item.id,
-          quantity: item.quantity
-        })),
+        lineItems: cart.map(item => ({ id: item.id, quantity: item.quantity })),
         customerEmail: email,
         clientReferenceId: `${student} | ${ensemble} | ${email}`
       })
@@ -172,7 +208,6 @@ document.getElementById('checkout').addEventListener('click', async () => {
 
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Checkout failed');
-
     window.location.href = data.url;
   } catch (error) {
     message.textContent = error.message;

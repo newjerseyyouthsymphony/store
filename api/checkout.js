@@ -7,7 +7,6 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // Re-check Airtable at checkout so a stale browser session cannot place an order.
     if (!(await isStoreOpen())) {
       res.setHeader('Cache-Control', 'no-store');
       return res.status(503).json({ error: 'The store is temporarily closed.' });
@@ -33,24 +32,18 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid checkout item' });
       }
 
-      const record = records.find((candidate) => candidate.id === item.id);
+      const record = records.find(candidate => candidate.id === item.id);
 
       if (!record || !isActive(record.fields)) {
-        return res.status(409).json({
-          error: 'An item in your cart is no longer available.',
-        });
+        return res.status(409).json({ error: 'An item in your cart is no longer available.' });
       }
 
       const fields = record.fields;
       const price = Number(fields.Price);
-      const name = [fields['Item Name'], fields.Size, fields.Color]
-        .filter(Boolean)
-        .join(' — ');
+      const name = [fields['Item Name'], fields.Size, fields.Color].filter(Boolean).join(' — ');
 
       if (!Number.isFinite(price) || price < 0 || !name) {
-        return res.status(400).json({
-          error: 'An item has invalid merchandise details.',
-        });
+        return res.status(400).json({ error: 'An item has invalid merchandise details.' });
       }
 
       stripeItems.push({
@@ -70,22 +63,14 @@ module.exports = async function handler(req, res) {
       mode: 'payment',
       line_items: stripeItems,
       customer_email: typeof customerEmail === 'string' ? customerEmail : undefined,
-      client_reference_id:
-        typeof clientReferenceId === 'string'
-          ? clientReferenceId.slice(0, 200)
-          : undefined,
+      client_reference_id: typeof clientReferenceId === 'string' ? clientReferenceId.slice(0, 200) : undefined,
       success_url: `${origin}/thank-you.html`,
       cancel_url: `${origin}/`,
     });
 
-    return res.status(200).json({
-      sessionId: session.id,
-      url: session.url,
-    });
+    return res.status(200).json({ sessionId: session.id, url: session.url });
   } catch (error) {
     console.error('Checkout error:', error.message);
-    return res.status(500).json({
-      error: 'Unable to start checkout.',
-    });
+    return res.status(500).json({ error: 'Unable to start checkout.' });
   }
 };
