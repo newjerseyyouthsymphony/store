@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NJYS Store Admin</title>
+  <style>
+    body{font:16px system-ui,sans-serif;max-width:1000px;margin:2rem auto;padding:0 1rem;color:#183042}
+    input,button{font:inherit;padding:.65rem}
+    button{cursor:pointer}
+    table{width:100%;border-collapse:collapse;margin-top:1rem}
+    th,td{text-align:left;padding:.7rem;border-bottom:1px solid #ddd}
+  </style>
+</head>
+<body>
+  <h1>Merchandise Admin</h1>
+  <form id="login">
+    <label>Admin password
+      <input id="password" type="password" required>
+    </label>
+    <button>Sign in</button>
+  </form>
+
+  <div id="admin" hidden>
+    <button id="refresh">Refresh</button>
+    <p id="message" role="status"></p>
+    <table>
+      <thead><tr><th>Item</th><th>Size</th><th>Color</th><th>Price</th><th>Status</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+<script>
+let password = '';
+
+async function load() {
+  const response = await fetch('/api/admin', {
+    headers: { 'x-admin-password': password }
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Unable to load products');
+
+  document.getElementById('rows').innerHTML = data.products.map(product => `
+    <tr>
+      <td>${escapeHtml(product.name)}</td>
+      <td>${escapeHtml(product.size)}</td>
+      <td>${escapeHtml(product.color)}</td>
+      <td>$${Number(product.price || 0).toFixed(2)}</td>
+      <td>
+        <button
+          data-id="${escapeHtml(product.id)}"
+          data-active="${!product.active}"
+          onclick="toggleStatus(this)">
+          ${product.active ? 'Active — deactivate' : 'Inactive — activate'}
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[char]));
+}
+
+document.getElementById('login').addEventListener('submit', async event => {
+  event.preventDefault();
+  password = document.getElementById('password').value;
+
+  try {
+    await load();
+    document.getElementById('login').hidden = true;
+    document.getElementById('admin').hidden = false;
+  } catch (error) {
+    document.getElementById('message').textContent = error.message;
+  }
+});
+
+async function toggleStatus(button) {
+  try {
+    const response = await fetch('/api/admin', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-password': password
+      },
+      body: JSON.stringify({
+        id: button.dataset.id,
+        active: button.dataset.active === 'true'
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Update failed');
+    await load();
+  } catch (error) {
+    document.getElementById('message').textContent = error.message;
+  }
+}
+
+document.getElementById('refresh').addEventListener('click', () => {
+  load().catch(error => {
+    document.getElementById('message').textContent = error.message;
+  });
+});
+</script>
+</body>
+</html>

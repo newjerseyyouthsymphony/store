@@ -1,367 +1,186 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NJYS Storefront</title>
-
-    <!-- Use the official Stripe.js v3 library -->
-    <script src="https://js.stripe.com/v3/"></script>
-
-    <style>
-        :root {
-            --njys-blue: #1f63af;
-            --njys-blue-2: #4a9ee6;
-            --njys-blue-3: #6db3f2;
-            --njys-navy: #123e73;
-            --panel: rgba(255, 255, 255, 0.96);
-        }
-        * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            padding: 20px;
-            color: #333;
-            max-width: 1400px;
-            margin: 0 auto;
-            min-height: 100vh;
-            background:
-                radial-gradient(circle at top, rgba(255,255,255,0.18), transparent 30%),
-                linear-gradient(180deg, var(--njys-blue) 0%, var(--njys-navy) 100%);
-            position: relative;
-        }
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
-            background-size: 36px 36px;
-            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0));
-            opacity: 0.18;
-        }
-        h1, h2 {
-            border-bottom: 2px solid rgba(255,255,255,0.55);
-            padding-bottom: 8px;
-            color: #fff;
-            letter-spacing: 0.2px;
-        }
-        h1 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            margin-bottom: 18px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.18);
-        }
-        .hero {
-            background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.06));
-            border: 1px solid rgba(255,255,255,0.18);
-            color: #fff;
-            border-radius: 18px;
-            padding: 18px 20px;
-            margin-bottom: 18px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.16);
-            backdrop-filter: blur(8px);
-        }
-        .hero p { margin: 0; line-height: 1.5; }
-        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media(min-width: 1024px) { .grid { grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr); align-items: start; } }
-        .products-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        @media(min-width: 640px) { .products-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-        @media(min-width: 1100px) { .products-list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-        .product-card {
-            border: 1px solid rgba(31,99,175,0.12);
-            padding: 16px;
-            border-radius: 16px;
-            background: var(--panel);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.14);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 12px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            overflow: hidden;
-        }
-        .product-card:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(0,0,0,0.18); }
-        .product-image {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            border-radius: 12px;
-            background: linear-gradient(180deg, #f4f7fb, #eef4fb);
-            object-fit: contain;
-            object-position: center;
-            border: 1px solid #e5ecf5;
-            cursor: zoom-in;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5);
-        }
-        .product-title { font-size: 18px; font-weight: bold; margin: 0 0 8px 0; min-height: 38px; color: #1f63af; }
-        label { display: block; font-size: 12px; font-weight: bold; margin-top: 8px; margin-bottom: 5px; color: #333; }
-        select, input {
-            padding: 10px;
-            font-size: 14px;
-            border-radius: 8px;
-            border: 1px solid #d9e3ef;
-            box-sizing: border-box;
-            width: 100%;
-            background-color: #f9fbfe;
-            color: #333;
-        }
-        select:focus, input:focus { outline: none; border-color: var(--njys-blue); background-color: #fff; box-shadow: 0 0 0 3px rgba(109,179,242,0.18); }
-        input[type="number"] { max-width: 70px; }
-        input[type="text"], input[type="email"] { padding: 10px; margin-bottom: 10px; }
-        .cart-panel, .student-panel {
-            border: 1px solid rgba(255,255,255,0.18);
-            padding: 20px;
-            border-radius: 16px;
-            background: rgba(255,255,255,0.97);
-            height: fit-content;
-            box-shadow: 0 14px 34px rgba(0,0,0,0.18);
-            backdrop-filter: blur(6px);
-        }
-        @media(min-width: 1024px) { .cart-panel { position: sticky; top: 20px; } }
-        .cart-item { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid #eee; padding: 12px 0; font-size: 14px; color: #333; }
-        .cart-item:last-child { border-bottom: none; }
-        .remove-btn { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 12px; width: auto; display: inline; font-weight: bold; }
-        .remove-btn:hover { color: #ff4d4d; }
-        .total-box { font-size: 20px; font-weight: bold; margin-top: 15px; text-align: right; color: #1f63af; padding-top: 12px; border-top: 2px solid #eee; }
-        .btn-add, .btn-checkout {
-            background: linear-gradient(135deg, var(--njys-blue-3), var(--njys-blue-2));
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 8px;
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-        }
-        .btn-add:hover, .btn-checkout:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(74, 158, 230, 0.32);
-            filter: brightness(1.02);
-        }
-        .btn-checkout { width: 100%; padding: 14px; font-size: 16px; margin-top: 15px; text-align: center; border-radius: 10px; }
-        .btn-checkout:disabled { background: #cfd6df; color: #8a97a6; cursor: not-allowed; box-shadow: none; transform: none; }
-        .validation-hint { font-size: 12px; color: #7c8ea3; margin-top: 8px; font-style: italic; }
-        .student-panel h2 { color: #1f63af; }
-        .customer-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        @media(min-width: 900px) { .customer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-        .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
-        .lightbox.open { display: flex; }
-        .lightbox img { max-width: min(96vw, 1000px); max-height: 92vh; width: auto; height: auto; object-fit: contain; background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-        .lightbox-close { position: fixed; top: 18px; right: 22px; background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 34px; line-height: 1; width: 44px; height: 44px; border-radius: 999px; cursor: pointer; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NJYS Merch Store</title>
+  <style>
+    body{margin:0;font:16px system-ui,sans-serif;background:#4a90d9;color:#183042}
+    main{max-width:1100px;margin:auto;padding:24px}
+    h1,h2{color:#fff}
+    .panel{background:#fff;border-radius:12px;padding:16px}
+    .customer,.layout{display:grid;gap:16px}
+    .customer{grid-template-columns:repeat(3,1fr)}
+    .layout{grid-template-columns:minmax(0,2fr) minmax(280px,1fr)}
+    .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+    .card{background:#fff;border-radius:12px;padding:16px}
+    label{display:block;font-weight:bold;font-size:13px;margin-top:8px}
+    input{width:100%;box-sizing:border-box;padding:10px;margin-top:4px}
+    button{border:0;border-radius:8px;padding:11px;background:#4a9ee6;color:#fff;font-weight:bold;cursor:pointer}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .cart-row{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:10px 0}
+    .total{text-align:right;font-size:20px;font-weight:bold;margin-top:12px}
+    #message{color:#a32222}
+    @media(max-width:800px){.customer,.layout{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
-    <script>
-        let cart = [];
-        let stripe = null;
+<main>
+  <h1>NJYS Merch Store</h1>
 
-        const productImages = {
-            item1: { Black: 'https://i.imgur.com/y3vDkf6.png', Grey: 'https://i.imgur.com/E4iS8Po.png', Navy: 'https://i.imgur.com/Cn1ZnRM.png' },
-            item2: { Black: 'https://i.imgur.com/AViHWYP.png', Grey: 'https://i.imgur.com/vBDbFvg.png', Navy: 'https://i.imgur.com/GU7CFAc.png' },
-            item3: { Black: 'https://i.imgur.com/yktaUpI.png', Grey: 'https://i.imgur.com/8ObsBld.png', Navy: 'https://i.imgur.com/znjYaKL.png' },
-            item4: { Black: 'https://i.imgur.com/3wCAthF.png', Grey: 'https://i.imgur.com/IL6qQfu.png', Navy: 'https://i.imgur.com/TjGO51U.png' },
-            item5: { Black: 'https://i.imgur.com/FMXKCCM.png', Grey: 'https://i.imgur.com/HZ6XwDA.png', Navy: 'https://i.imgur.com/A1jkTxT.png' },
-            item6: { Black: 'https://i.imgur.com/PQ0YPm7.png', Natural: 'https://i.imgur.com/Q33GnwD.png' }
-        };
+  <section class="panel customer">
+    <div><label for="student">Student Full Name</label><input id="student" required></div>
+    <div><label for="ensemble">Ensemble Name</label><input id="ensemble" required></div>
+    <div><label for="email">Parent Email</label><input id="email" type="email" required></div>
+  </section>
 
-        function updateProductImage(elementId) {
-            const colorSelect = document.getElementById(`color-${elementId}`);
-            const imageElement = document.getElementById(`image-${elementId}`);
-            if (!colorSelect || !imageElement) return;
-            const imageUrl = productImages[elementId]?.[colorSelect.value];
-            if (imageUrl) imageElement.src = imageUrl;
-        }
+  <div class="layout">
+    <section>
+      <h2>Available Items</h2>
+      <div id="products" class="products">Loading merchandise…</div>
+    </section>
 
-        function openLightbox(src, alt) {
-            const lb = document.getElementById('lightbox');
-            const lbImg = document.getElementById('lightboxImg');
-            lbImg.src = src;
-            lbImg.alt = alt || 'Enlarged product image';
-            lb.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeLightbox() {
-            const lb = document.getElementById('lightbox');
-            lb.classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        function syncLightboxFromThumbnail(imgEl) {
-            if (!imgEl) return;
-            openLightbox(imgEl.src, imgEl.alt);
-        }
-    </script>
-
-    <div id="lightbox" class="lightbox" onclick="if (event.target === this) closeLightbox()" aria-hidden="true">
-        <button class="lightbox-close" type="button" aria-label="Close enlarged image" onclick="closeLightbox()">&times;</button>
-        <img id="lightboxImg" src="" alt="Enlarged product image">
-    </div>
-
-    <h1>NJYS Merch Store</h1>
-    <div class="hero"><p>Browse NJYS merchandise, choose your size and color, then check out securely in just a few clicks.</p></div>
-
-    <div class="student-panel" style="margin-bottom: 20px;">
-        <h2>Customer Info</h2>
-        <div class="customer-grid">
-            <div>
-                <label>Student Full Name:</label>
-                <input type="text" id="studentInput" placeholder="e.g. Jane Doe" oninput="validateForm()">
-            </div>
-            <div>
-                <label>Ensemble Name:</label>
-                <input type="text" id="ensembleInput" placeholder="e.g. Youth Symphony" oninput="validateForm()">
-            </div>
-            <div>
-                <label>Parent Email:</label>
-                <input type="email" id="emailInput" placeholder="e.g. parent@email.com" oninput="validateForm()">
-            </div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div>
-            <h2>Available Items</h2>
-            <div class="products-list">
-                <div class="product-card"><div><img class="product-image" id="image-item1" src="https://i.imgur.com/y3vDkf6.png" alt="T-Shirt product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">T-Shirt - $20</div><label>Color:</label><select id="color-item1" onchange="updateProductImage('item1')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select><label>Size:</label><select id="size-item1"><option value="price_1UC1QLLi0nDifNVEzMzGCXYn,Small,20.00">Small</option><option value="price_1UC1RELi0nDifNVECzEBZuNQ,Medium,20.00">Medium</option><option value="price_1UBwEOLi0nDifNVEzGYcYKZi,Large,20.00">Large</option><option value="price_1UBwEOLi0nDifNVEp6478nvh,X-Large,20.00">X-Large</option><option value="price_1UBpDBLi0nDifNVEIrGOaYzS,2X-Large,20.00">2X-Large</option><option value="price_1UBpDBLi0nDifNVErFzMrto3,3X-Large,20.00">3X-Large</option><option value="price_1UBpDBLi0nDifNVEdfYNtIxl,Youth Medium,20.00">Youth Medium</option><option value="price_1UBwEOLi0nDifNVEhW9FQLN9,Youth Large,20.00">Youth Large</option><option value="price_1UBwEOLi0nDifNVE1hFX9cwm,Youth X-Large,20.00">Youth X-Large</option></select><label>Qty:</label><input type="number" id="qty-item1" value="1" min="1"></div><button class="btn-add" onclick="addItem('T-Shirt','item1')">Add to Cart</button></div>
-                <div class="product-card"><div><img class="product-image" id="image-item2" src="https://i.imgur.com/AViHWYP.png" alt="Zippered Hoodie product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">Zippered Hoodie - $35</div><label>Color:</label><select id="color-item2" onchange="updateProductImage('item2')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select><label>Size:</label><select id="size-item2"><option value="price_1UBpG1Li0nDifNVEA7bz4kRw,Small,35.00">Small</option><option value="price_1UBwFoLi0nDifNVEBfrzbmXa,Medium,35.00">Medium</option><option value="price_1UBwFoLi0nDifNVE92EGFOq2,Large,35.00">Large</option><option value="price_1UBwGeLi0nDifNVE1kgLUTAC,X-Large,35.00">X-Large</option><option value="price_1UBpGTLi0nDifNVEoKObtdqr,2X-Large,35.00">2X-Large</option><option value="price_1UBpGTLi0nDifNVEI7nE4vpR,3X-Large,35.00">3X-Large</option><option value="price_1UBpG1Li0nDifNVERmjjAQfx,Youth Medium,35.00">Youth Medium</option><option value="price_1UBwGeLi0nDifNVEV4ZVLsuz,Youth Large,35.00">Youth Large</option><option value="price_1UBwGeLi0nDifNVE9pwM9xSK,Youth X-Large,35.00">Youth X-Large</option></select><label>Qty:</label><input type="number" id="qty-item2" value="1" min="1"></div><button class="btn-add" onclick="addItem('Zippered Hoodie','item2')">Add to Cart</button></div>
-                <div class="product-card"><div><img class="product-image" id="image-item3" src="https://i.imgur.com/yktaUpI.png" alt="Hoodie product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">Hoodie - $40</div><label>Color:</label><select id="color-item3" onchange="updateProductImage('item3')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select><label>Size:</label><select id="size-item3"><option value="price_1UC1OBLi0nDifNVE8fhCrVdz,Small,40.00">Small</option><option value="price_1UBwIPLi0nDifNVEM8vCmMeV,Medium,40.00">Medium</option><option value="price_1UBwIPLi0nDifNVEjcnIJBkK,Large,40.00">Large</option><option value="price_1UBwIPLi0nDifNVEHgMF4rCt,X-Large,40.00">X-Large</option><option value="price_1UBpKWLi0nDifNVEg5eERCkK,2X-Large,40.00">2X-Large</option><option value="price_1UBpKWLi0nDifNVEYK8JX6VZ,3X-Large,40.00">3X-Large</option><option value="price_1UBpKXLi0nDifNVENE9m7bt5,Youth Medium,40.00">Youth Medium</option><option value="price_1UBwIPLi0nDifNVEIcxNjYmQ,Youth Large,40.00">Youth Large</option><option value="price_1UBwIPLi0nDifNVEIxjUJOBX,Youth X-Large,40.00">Youth X-Large</option></select><label>Qty:</label><input type="number" id="qty-item3" value="1" min="1"></div><button class="btn-add" onclick="addItem('Hoodie','item3')">Add to Cart</button></div>
-                <div class="product-card"><div><img class="product-image" id="image-item4" src="https://i.imgur.com/3wCAthF.png" alt="Sweatpants product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">Sweatpants - $32</div><label>Color:</label><select id="color-item4" onchange="updateProductImage('item4')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select><label>Size:</label><select id="size-item4"><option value="price_1UC0scLi0nDifNVEkSXHKtd6,Small,32.00">Small</option><option value="price_1UBwJsLi0nDifNVEYsDvAidX,Medium,32.00">Medium</option><option value="price_1UBwJsLi0nDifNVEnsKtF2GC,Large,32.00">Large</option><option value="price_1UBwJsLi0nDifNVEfsNb76Rr,X-Large,32.00">X-Large</option><option value="price_1UBpLsLi0nDifNVEZCN9SqoL,2X-Large,32.00">2X-Large</option><option value="price_1UBpLsLi0nDifNVERwqXU2bC,3X-Large,32.00">3X-Large</option><option value="price_1UBpLsLi0nDifNVEjM3z4xAf,Youth Medium,32.00">Youth Medium</option><option value="price_1UBwJsLi0nDifNVEmwQEXWmC,Youth Large,32.00">Youth Large</option><option value="price_1UBwJsLi0nDifNVEXhmM7XBq,Youth X-Large,32.00">Youth X-Large</option></select><label>Qty:</label><input type="number" id="qty-item4" value="1" min="1"></div><button class="btn-add" onclick="addItem('Sweatpants','item4')">Add to Cart</button></div>
-                <div class="product-card"><div><img class="product-image" id="image-item5" src="https://i.imgur.com/FMXKCCM.png" alt="Tote Bag product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">Tote Bag - $18</div><label>Color:</label><select id="color-item5" onchange="updateProductImage('item5')"><option value="Black">Black</option><option value="Grey">Grey</option><option value="Navy">Navy</option></select><label>Price:</label><div style="padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9; color: #1f63af; font-weight: bold;">One Size</div><input type="hidden" id="size-item5" value="price_1UBwKlLi0nDifNVENSMsAvu6,One Size,18.00"><label>Qty:</label><input type="number" id="qty-item5" value="1" min="1"></div><button class="btn-add" onclick="addItem('Tote Bag','item5')">Add to Cart</button></div>
-                <div class="product-card"><div><img class="product-image" id="image-item6" src="https://i.imgur.com/PQ0YPm7.png" alt="Jumbo Tote Bag product image" onclick="syncLightboxFromThumbnail(this)"><div class="product-title">Jumbo Tote Bag - $20</div><label>Color:</label><select id="color-item6" onchange="updateProductImage('item6')"><option value="Black">Black</option><option value="Natural">Natural</option></select><label>Price:</label><div style="padding: 10px; font-size: 14px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9; color: #1f63af; font-weight: bold;">One Size</div><input type="hidden" id="size-item6" value="price_1UBwM6Li0nDifNVEhYZp2lQb,One Size,20.00"><label>Qty:</label><input type="number" id="qty-item6" value="1" min="1"></div><button class="btn-add" onclick="addItem('Jumbo Tote Bag','item6')">Add to Cart</button></div>
-            </div>
-        </div>
-        <div>
-            <h2>Your Shopping Cart</h2>
-            <div class="cart-panel">
-                <div id="cartItems">Your cart is empty.</div>
-                <div class="total-box">Total: $<span id="cartTotal">0.00</span></div>
-                <button class="btn-checkout" id="checkoutBtn" disabled onclick="handleCheckout()">Proceed to Payment</button>
-                <div class="validation-hint" id="validationHint"></div>
-            </div>
-        </div>
-    </div>
+    <aside>
+      <h2>Your Cart</h2>
+      <div class="panel">
+        <div id="cart">Your cart is empty.</div>
+        <div id="total" class="total">Total: $0.00</div>
+        <p id="message" role="alert"></p>
+        <button id="checkout" disabled>Proceed to Payment</button>
+      </div>
+    </aside>
+  </div>
+</main>
 
 <script>
-    function addItem(itemName, elementId) {
-        const variationSelect = document.getElementById(`size-${elementId}`);
-        const colorSelect = document.getElementById(`color-${elementId}`);
-        const qtyInput = document.getElementById(`qty-${elementId}`);
-        const colorValue = colorSelect ? colorSelect.value : 'Standard';
-        const [stripePriceId, sizeName, priceVal] = (variationSelect.value || '').split(',');
-        const price = parseFloat(priceVal || '0');
-        const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
-        if (!stripePriceId || stripePriceId === 'price_PASTE_ID_HERE') {
-            alert('Error: missing price ID for this item. Please contact the store admin.');
-            return;
-        }
-        const existingIndex = cart.findIndex(c => c.name === itemName && c.size === sizeName && c.color === colorValue);
-        if (existingIndex >= 0) {
-            cart[existingIndex].qty += qty;
-        } else {
-            cart.push({ name: itemName, id: stripePriceId, size: sizeName, color: colorValue, price: price, qty: qty });
-        }
-        renderCart();
-    }
+let products = [];
+let cart = [];
 
-    function renderCart() {
-        const container = document.getElementById('cartItems');
-        if (!cart || cart.length === 0) {
-            container.innerHTML = 'Your cart is empty.';
-            document.getElementById('cartTotal').textContent = '0.00';
-            validateForm();
-            return;
-        }
-        container.innerHTML = '';
-        let total = 0;
-        cart.forEach((item, idx) => {
-            const itemTotal = item.price * item.qty;
-            total += itemTotal;
-            const itemHtml = document.createElement('div');
-            itemHtml.className = 'cart-item';
-            itemHtml.innerHTML = `<div><strong>${item.name}</strong><br/><small>${item.size} - ${item.color} x${item.qty}</small></div><div>$${itemTotal.toFixed(2)}<br/><button class="remove-btn" onclick="removeItem(${idx})">Remove</button></div>`;
-            container.appendChild(itemHtml);
-        });
-        document.getElementById('cartTotal').textContent = total.toFixed(2);
-        validateForm();
-    }
+async function loadProducts() {
+  try {
+    const response = await fetch('/api/products', { cache: 'no-store' });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Unable to load products');
 
-    function removeItem(idx) { cart.splice(idx, 1); renderCart(); }
+    products = data.products || [];
+    document.getElementById('products').innerHTML = products.length
+      ? products.map((product, index) => `
+          <article class="card">
+            <h3>${escapeHtml(product.name)}</h3>
+            <p>${escapeHtml(product.size)} · ${escapeHtml(product.color)}</p>
+            <p><strong>$${product.price.toFixed(2)}</strong></p>
+            <label>Quantity
+              <input id="qty-${index}" type="number" min="1" max="99" value="1">
+            </label>
+            <button onclick="addToCart(${index})">Add to Cart</button>
+          </article>
+        `).join('')
+      : 'No active merchandise is currently available.';
+  } catch (error) {
+    document.getElementById('products').textContent = error.message;
+  }
+}
 
-    function validateForm() {
-        const studentName = (document.getElementById('studentInput')?.value || '').trim();
-        const ensembleName = (document.getElementById('ensembleInput')?.value || '').trim();
-        const emailAddress = (document.getElementById('emailInput')?.value || '').trim();
-        const cartHasItems = cart.length > 0;
-        const checkoutBtn = document.getElementById('checkoutBtn');
-        const hintElement = document.getElementById('validationHint');
-        if (studentName && ensembleName && emailAddress && cartHasItems) {
-            checkoutBtn.disabled = false;
-            hintElement.textContent = '';
-        } else {
-            checkoutBtn.disabled = true;
-            const missing = [];
-            if (!studentName) missing.push('student name');
-            if (!ensembleName) missing.push('ensemble name');
-            if (!emailAddress) missing.push('email');
-            if (!cartHasItems) missing.push('items in cart');
-            hintElement.textContent = `Missing: ${missing.join(', ')}`;
-        }
-    }
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[char]));
+}
 
-    async function handleCheckout() {
-        const checkoutBtn = document.getElementById('checkoutBtn');
-        checkoutBtn.disabled = true;
-        checkoutBtn.textContent = 'Processing...';
-        try {
-            const studentName = document.getElementById('studentInput').value.trim();
-            const ensembleName = document.getElementById('ensembleInput').value.trim();
-            const emailAddress = document.getElementById('emailInput').value.trim();
-            const cartDescription = cart.map(c => `${c.name} (${c.size}-${c.color}) x${c.qty}`).join(' | ');
-            const totalAmount = parseFloat(document.getElementById('cartTotal').textContent);
-            const lineItems = cart.map(item => ({ price: item.id, quantity: item.qty }));
-            const metadataString = `${studentName} | ${ensembleName} | ${emailAddress} | ${cartDescription}`;
-            const response = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lineItems, customerEmail: emailAddress, clientReferenceId: metadataString, successUrl: window.location.origin + '/thank-you.html?orderId=' + Date.now(), cancelUrl: window.location.href })
-            });
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to create checkout session');
-            }
-            const { url, sessionId } = await response.json();
-            try {
-                const orderId = 'ORD-' + Date.now();
-                const customerInfo = `${studentName} (${ensembleName})`;
-                await fetch('/api/save-order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderId, customerInfo, amountPaid: totalAmount, buyerEmail: emailAddress, stripeReference: sessionId, orderContents: cartDescription })
-                });
-            } catch (airtableError) {
-                console.warn('Warning: Order saved to Stripe but Airtable sync failed:', airtableError);
-            }
-            window.location.href = url;
-        } catch (error) {
-            console.error('Checkout error:', error);
-            alert('Error: ' + error.message);
-            checkoutBtn.disabled = false;
-            checkoutBtn.textContent = 'Proceed to Payment';
-        }
-    }
+function addToCart(index) {
+  const product = products[index];
+  const quantityInput = document.getElementById(`qty-${index}`);
+  const quantity = Math.max(1, Math.min(99, Number(quantityInput.value) || 1));
+  const existing = cart.find(item => item.id === product.id);
 
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLightbox(); });
-    document.addEventListener('DOMContentLoaded', function () {
-        if (typeof Stripe === 'function') {
-            stripe = Stripe('pk_live_51GbHGJLi0nDifNVEPo7WLcwjHCriorbmgpx2NN6tVuHcnOqNU1Psn4YJY4G1Mrex2UbNOEyP3m825Pzc9FMt25w300mNGxYaju');
-        } else {
-            console.error('Stripe.js did not load. Check the script src.');
-        }
-        ['item1', 'item2', 'item3', 'item4', 'item5', 'item6'].forEach(updateProductImage);
+  if (existing) {
+    existing.quantity = Math.min(99, existing.quantity + quantity);
+  } else {
+    cart.push({ ...product, quantity });
+  }
+
+  renderCart();
+}
+
+function removeItem(index) {
+  cart.splice(index, 1);
+  renderCart();
+}
+
+function renderCart() {
+  let total = 0;
+
+  document.getElementById('cart').innerHTML = cart.length
+    ? cart.map((item, index) => {
+        const amount = item.price * item.quantity;
+        total += amount;
+        return `
+          <div class="cart-row">
+            <span>
+              ${escapeHtml(item.name)}
+              <br><small>${escapeHtml(item.size)} / ${escapeHtml(item.color)} × ${item.quantity}</small>
+            </span>
+            <span>
+              $${amount.toFixed(2)}
+              <button onclick="removeItem(${index})" style="padding:3px 8px">×</button>
+            </span>
+          </div>
+        `;
+      }).join('')
+    : 'Your cart is empty.';
+
+  document.getElementById('total').textContent = `Total: $${total.toFixed(2)}`;
+  validateCheckout();
+}
+
+function validateCheckout() {
+  const student = document.getElementById('student').value.trim();
+  const ensemble = document.getElementById('ensemble').value.trim();
+  const email = document.getElementById('email').value.trim();
+  document.getElementById('checkout').disabled =
+    !(cart.length && student && ensemble && email);
+}
+
+['student', 'ensemble', 'email'].forEach(id => {
+  document.getElementById(id).addEventListener('input', validateCheckout);
+});
+
+document.getElementById('checkout').addEventListener('click', async () => {
+  const button = document.getElementById('checkout');
+  const message = document.getElementById('message');
+
+  button.disabled = true;
+  message.textContent = '';
+
+  try {
+    const email = document.getElementById('email').value.trim();
+    const student = document.getElementById('student').value.trim();
+    const ensemble = document.getElementById('ensemble').value.trim();
+
+    const response = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lineItems: cart.map(item => ({
+          id: item.id,
+          quantity: item.quantity
+        })),
+        customerEmail: email,
+        clientReferenceId: `${student} | ${ensemble} | ${email}`
+      })
     });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Checkout failed');
+
+    window.location.href = data.url;
+  } catch (error) {
+    message.textContent = error.message;
+    button.disabled = false;
+  }
+});
+
+loadProducts();
 </script>
 </body>
 </html>
