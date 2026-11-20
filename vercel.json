@@ -6,11 +6,6 @@
     { "src": "maintenance.html", "use": "@vercel/static" },
     { "src": "admin.html", "use": "@vercel/static" }
   ],
-  "functions": {
-    "api/site.js": {
-      "includeFiles": "*.html"
-    }
-  },
   "routes": [
     { "src": "/api/admin", "dest": "/api/admin" },
     { "src": "/api/products", "dest": "/api/products" },
