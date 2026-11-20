@@ -1,5 +1,16 @@
 const { listMerchandise, isActive, isStoreOpen } = require('./_airtable');
 
+function photoUrl(fields) {
+  if (!Array.isArray(fields.Photo)) return '';
+
+  for (const photo of fields.Photo) {
+    const candidate = photo.thumbnails?.large?.url || photo.url;
+    if (typeof candidate === 'string' && /^https?:\/\//i.test(candidate)) return candidate;
+  }
+
+  return '';
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -21,18 +32,20 @@ module.exports = async function handler(req, res) {
       const size = String(record.fields.Size || '').trim();
       const color = String(record.fields.Color || '').trim();
       const price = Number(record.fields.Price);
+      const image = photoUrl(record.fields);
 
       if (!name || !size || !color || !Number.isFinite(price) || price < 0) continue;
 
       if (!groups.has(name)) {
-        groups.set(name, { name, price, variants: [] });
+        groups.set(name, { name, price, photo: image, variants: [] });
       }
 
       const product = groups.get(name);
       product.price = price;
+      if (!product.photo && image) product.photo = image;
 
       if (!product.variants.some(variant => variant.size === size && variant.color === color)) {
-        product.variants.push({ id: record.id, size, color, price });
+        product.variants.push({ id: record.id, size, color, price, photo: image });
       }
     }
 
@@ -42,9 +55,13 @@ module.exports = async function handler(req, res) {
       return {
         name: product.name,
         price: product.price,
+        photo: product.photo,
         sizes,
         colors,
-        variants: product.variants,
+        variants: product.variants.map(variant => ({
+          ...variant,
+          photo: variant.photo || product.photo,
+        })),
       };
     });
 

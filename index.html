@@ -14,6 +14,7 @@
     .layout{grid-template-columns:minmax(0,2fr) minmax(280px,1fr)}
     .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
     .card{background:#fff;border-radius:12px;padding:16px}
+    .product-photo{display:block;width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f4f7fa;margin-bottom:12px}
     label{display:block;font-weight:bold;font-size:13px;margin-top:8px}
     input,select{width:100%;box-sizing:border-box;padding:10px;margin-top:4px}
     button{border:0;border-radius:8px;padding:11px;background:#4a9ee6;color:#fff;font-weight:bold;cursor:pointer}
@@ -66,14 +67,15 @@ async function loadProducts() {
     document.getElementById('products').innerHTML = products.length
       ? products.map((product, index) => `
           <article class="card">
+            ${product.photo ? `<img id="photo-${index}" class="product-photo" src="${escapeHtml(product.photo)}" alt="${escapeHtml(product.name)}">` : ''}
             <h3>${escapeHtml(product.name)}</h3>
             <label>Size
-              <select id="size-${index}" onchange="updateVariantPrice(${index})">
+              <select id="size-${index}" onchange="updateVariant(${index})">
                 ${product.sizes.map(size => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`).join('')}
               </select>
             </label>
             <label>Color
-              <select id="color-${index}" onchange="updateVariantPrice(${index})">
+              <select id="color-${index}" onchange="updateVariant(${index})">
                 ${product.colors.map(color => `<option value="${escapeHtml(color)}">${escapeHtml(color)}</option>`).join('')}
               </select>
             </label>
@@ -103,11 +105,15 @@ function selectedVariant(index) {
   return product.variants.find(variant => variant.size === size && variant.color === color);
 }
 
-function updateVariantPrice(index) {
+function updateVariant(index) {
+  const product = products[index];
   const variant = selectedVariant(index);
   const priceElement = document.getElementById(`price-${index}`);
+  const photoElement = document.getElementById(`photo-${index}`);
+
   if (variant) {
     priceElement.textContent = `$${variant.price.toFixed(2)}`;
+    if (photoElement && variant.photo) photoElement.src = variant.photo;
   } else {
     priceElement.textContent = 'Unavailable';
   }
