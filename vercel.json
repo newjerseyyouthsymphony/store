@@ -5,12 +5,10 @@
     }
   },
   "routes": [
-    { "src": "/api/admin", "dest": "/api/admin" },
-    { "src": "/api/products", "dest": "/api/products" },
-    { "src": "/api/checkout", "dest": "/api/checkout" },
-    { "src": "/api/site", "dest": "/api/site" },
-    { "src": "/admin.html", "dest": "/admin.html" },
-    { "src": "/maintenance.html", "dest": "/maintenance.html" },
+    { "src": "/", "dest": "/api/site?path=%2F" },
+    { "src": "/index.html", "dest": "/api/site?path=%2Findex.html" },
+    { "src": "/thank-you.html", "dest": "/api/site?path=%2Fthank-you.html" },
+    { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/api/site?path=/$1" }
   ]
 }
